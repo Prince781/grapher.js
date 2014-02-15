@@ -107,7 +107,9 @@ var Grapher = new function() {
 			this.drawYAxisLabel = function(text, pos, width) {
 				var miscRenderer = new _this.renderers.misc(ct);
 				text = miscRenderer.cutTextToLength(text, width);
-				ct.fillText(text, pos.x, pos.y);
+				ct.rotate(-Math.PI/2);
+				ct.fillText(text, -pos.y, pos.x);
+				ct.rotate(Math.PI/2);
 			};
 			
 			/* draws xy-datapoints across the graph */
@@ -151,7 +153,6 @@ var Graph = function(canvas, type, dataModel, options) {
 		throw "GraphModel: param \"canvas\" is not actually a <canvas> element.";
 
 	var _gthis = this;
-	
 	
 	// private:
 	function getDOption(dataset, key, def) {
@@ -240,8 +241,12 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.font = getOption("axesFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXAxisLabel(_gthis.axisLabels.x, {
 					x: _gthis.pos.x + _gthis.width/2 + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y + 40 + optCoeff(getOption("axesWidth", 2))
+					y: _gthis.pos.y + 45 + optCoeff(getOption("axesWidth", 2))
 				}, _gthis.width);
+				r_xy.drawYAxisLabel(_gthis.axisLabels.y, {
+					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 2))
+				}, _gthis.height);
 				
 				// draw data points
 				for (var i=0; i<dataModel.datasets.length; i++) {
