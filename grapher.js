@@ -23,8 +23,13 @@ var Grapher = new function() {
 	
 	// specific data-manipulation functions:
 	this.data = {
-		getRanges: function(datasets) {
+		getRange: function(datasets) {
+			var lower = datasets[0].x[0], upper = datasets[0].x[0];
+			for (var i=0; i<datasets.length; i++)
+				for (var j=0, p=datasets[i].x[j]; j<datasets[i].x.length; j++, p=datasets[i].x[j])
+					lower = p<lower?p:lower, upper = p>upper?p:upper;
 			
+			return _this.range(lower, upper);
 		}
 	};
 	
@@ -157,13 +162,12 @@ var Graph = function(canvas, type, dataModel, options) {
 				}, canvas.width-50);
 				
 				// add x-labels
-				/*
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
-				r_xy.drawXLabels(dataModel.x, {
+				r_xy.drawXLabels(Grapher.data.getRange(dataModel.datasets), {
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
-				}, canvas.width-100);*/
+				}, canvas.width-100);
 				
 			};
 			break;
