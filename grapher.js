@@ -14,22 +14,32 @@ var Grapher = new function() {
 		// we have l-u data points
 		// l - lower bound
 		// u - upper bound
-		var incr = typeof increment == "undefined" ? 1 : increment;
+		var incr = typeof increment == "undefined" || increment <= 0 ? 1 : increment;
 		var arr = [];
-		for (var i=l; i<=u; i++)
-			arr.push(l+i*incr);
+		for (var i=l; i<=u; i+=incr)
+			arr.push(l+i);
+		
+		arr.lower = l;
+		arr.upper = u;
+		arr.increment = incr;
 		return arr;
 	};
 	
 	// specific data-manipulation functions:
 	this.data = {
 		getRange: function(datasets) {
-			var lower = datasets[0].x[0], upper = datasets[0].x[0];
-			for (var i=0; i<datasets.length; i++)
+			var lower = datasets[0].x[0], upper = datasets[0].x[0], incr = 0;
+			var num = 0;
+			for (var i=0; i<datasets.length; i++) {
+				if (datasets[i].x.length > 0) {
+					incr += datasets[i].x[1] - datasets[i].x[0];
+					num++; // increase count
+				}
 				for (var j=0, p=datasets[i].x[j]; j<datasets[i].x.length; j++, p=datasets[i].x[j])
 					lower = p<lower?p:lower, upper = p>upper?p:upper;
-			
-			return _this.range(lower, upper);
+			}
+			incr /= (num==0 ? 1 : num);
+			return _this.range(lower, upper, incr);
 		}
 	};
 	
@@ -71,10 +81,25 @@ var Grapher = new function() {
 					ct.fillText(xdata[i], pos.x+i*(width/(xdata.length-1)), pos.y);
 			};
 			
-			/* draws y-data and ranges adjacent to the graph */
+			/* draws y-axis range adjacent to the graph */
 			this.drawYRange = function(ydata, pos, height) {
 				// pos - {x: num, y: num}
 				
+			};
+			
+			this.drawDataset = function(dset, range, pos, width, height) {
+				// dset - our data set {x: ,y: }
+				// range - array of range data
+				// pos - starting point to draw data
+				// width, height - boundaries of data drawings
+				for (var i=0; i<dset.x.length; i++) {
+					var x = pos.x+(dset.x[i]/range.upper)*width,
+						y = pos.y-(dset.y[i]/range.upper)*height;
+					ct.beginPath();
+					ct.arc(x, y, 5, 0, Math.PI*2, false);
+					ct.stroke();
+					ct.closePath();
+				}
 			};
 		}
 	};
@@ -109,7 +134,12 @@ var Graph = function(canvas, type, dataModel, options) {
 
 	var _gthis = this;
 	
+	
 	// private:
+	function getDOption(dataset, key, def) {
+		// def - default value (if key is unavailable)
+		return (key in dataset) ? dataset[key] : def;
+	}
 	function getOption(key, def) {
 		// def - default value (if key is unavailable)
 		var ops = typeof options == "undefined" ? {} : options;
@@ -118,6 +148,7 @@ var Graph = function(canvas, type, dataModel, options) {
 	var ctx = canvas.getContext("2d");
 	// format: r_<type> denotes a renderer of type "<type>"
 	var r_xy = new Grapher.renderers.xy(ctx); // create a new xy renderer
+	
 	
 	// default render functions:
 	function fRenderer() {
@@ -128,9 +159,12 @@ var Graph = function(canvas, type, dataModel, options) {
 		return getOption("sharpLines", true) ? (num%2 ? 0.5 : 0) : 0;
 	}
 	
+	// dimensions of the actual graph frame
+	this.width = canvas.width-100;
+	this.height = canvas.height-100;
+	
 	this.type = type;
-	this.idata = []; // contains independent variables/labels
-	this.ddata = []; // contains dependent variables/labels
+	this.range = Grapher.data.getRange(dataModel.datasets);
 	
 	this.rCallback = getOption("rCallback", function(){}); // on successful render
 	this.eCallback = getOption("eCallback", function(){}); // on error
@@ -151,7 +185,7 @@ var Graph = function(canvas, type, dataModel, options) {
 				r_xy.drawAxes({
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 60 - optCoeff(ctx.lineWidth)
-				}, canvas.width-100, canvas.height-100);
+				}, _gthis.width, _gthis.height);
 				
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
@@ -159,16 +193,27 @@ var Graph = function(canvas, type, dataModel, options) {
 				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
 					x: optCoeff(ctx.lineWidth) + canvas.width/2,
 					y: 30+optCoeff(ctx.lineWidth)
-				}, canvas.width-50);
+				}, _gthis.width+50);
 				
 				// add x-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
-				r_xy.drawXLabels(Grapher.data.getRange(dataModel.datasets), {
+				r_xy.drawXLabels(_gthis.range, {
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
-				}, canvas.width-100);
+				}, _gthis.width);
 				
+				// draw data points
+				for (var i=0; i<dataModel.datasets.length; i++) {
+					ctx.fillStyle = getDOption(dataModel.datasets[i],
+										"fillStyle", "rgba(23,42,34,0.6)");
+					ctx.strokeStyle = getDOption(dataModel.datasets[i],
+										"strokeStyle", "rgba(32,4,3,0.6)");
+					r_xy.drawDataset(dataModel.datasets[i], _gthis.range,  {
+						x: 60 + optCoeff(ctx.lineWidth),
+						y: canvas.height - 60 - optCoeff(ctx.lineWidth)
+					}, _gthis.width, _gthis.height);
+				}
 			};
 			break;
 		default:
