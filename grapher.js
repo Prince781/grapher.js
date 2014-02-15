@@ -21,6 +21,13 @@ var Grapher = new function() {
 		return arr;
 	};
 	
+	// specific data-manipulation functions:
+	this.data = {
+		getRanges: function(datasets) {
+			
+		}
+	};
+	
 	// specific render functions:
 	this.renderers = {
 		xy: function(ct) {
@@ -150,17 +157,18 @@ var Graph = function(canvas, type, dataModel, options) {
 				}, canvas.width-50);
 				
 				// add x-labels
+				/*
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXLabels(dataModel.x, {
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
-				}, canvas.width-100);
+				}, canvas.width-100);*/
 				
 			};
 			break;
 		default:
-			console.log("Chart type not supported.");
+			throw "Chart type not supported.";
 			break;
 		// TODO: other data models
 	}	
