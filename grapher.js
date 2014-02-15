@@ -41,6 +41,14 @@ var Grapher = new function() {
 			}
 			incr /= (num==0 ? 1 : num);
 			return _this.range(lower, upper, incr);
+		},
+		toDataset: function(dataset, keyName, valName) {
+			var keys = [], vals = [];
+			for (var i=0; i<dataset[keyName].length && i<dataset[valName].length; i++) {
+				keys[i] = dataset[keyName][i];
+				vals[i] = dataset[valName][i];
+			}
+			return {x: keys, y: vals};
 		}
 	};
 	
