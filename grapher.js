@@ -9,6 +9,18 @@
 var Grapher = new function() {
 	var _this = this;
 	
+	// specific grapher functions:
+	this.range = function(l, u, increment) {
+		// we have l-u data points
+		// l - lower bound
+		// u - upper bound
+		var incr = typeof increment == "undefined" ? 1 : increment;
+		var arr = [];
+		for (var i=l; i<u; i++)
+			arr.push(l+i*incr);
+		return arr;
+	};
+	
 	// specific render functions:
 	this.renderers = {
 		xy: function(ct) {
