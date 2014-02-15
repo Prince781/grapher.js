@@ -6,7 +6,8 @@
 <script type="text/javascript" src="grapher.js"></script>
 <script type="text/javascript">
 window.onload = function() {
-	var graph = new Graph(document.getElementById("graph_scatter"), "scatter",
+	var graphs = [];
+	graphs.push(new Graph(document.getElementById("graph_scatter"), "scatter",
 		{ // information (data) goes here
 			title: "Relationship Between Boilerplate Temperature and Time",
 			xlabel: "Time (s)",
@@ -44,10 +45,31 @@ window.onload = function() {
 				console.log("An error occurred.");
 			}
 		}
-	);
+	));
 	
-	// render the graph
-	Grapher.render(graph);
+	graphs.push(new Graph(document.getElementById("graph_bar"), "bar",
+		{ // information (data) goes here
+			title: "Number of \"Tutturu~\" References Per Steins;Gate Episode",
+			datasets: [
+				{ // data set 1
+					pointSize: 4,
+					pointLineWidth: 2,
+					drawLines: true,
+					strokeStyle: "rgba(142,35,52,0.7)",
+					x: [0, 1, 2, 3],
+					y: [0, 2, 3, 4, 5, 6]
+				}
+			]
+		},
+		{ // options go here
+			axesWidth: 1,
+			sharpLines: true
+		}
+	));
+	
+	// render the graphs
+	for (var g=0; g<graphs.length; g++)
+		Grapher.render(graphs[g]);
 };
 </script>
 <style type="text/css">
@@ -61,6 +83,11 @@ html, body {
 <div id="main_holder">
 	<div class="graphic_section">
 		<canvas id="graph_scatter" width="800" height="400">
+			Your browser does not support the HTML5 &lt;canvas&gt; specification.
+		</canvas>
+	</div>
+	<div class="graphic_section">
+		<canvas id="graph_bar" width="800" height="400">
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>
 	</div>

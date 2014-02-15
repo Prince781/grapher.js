@@ -236,7 +236,8 @@ var Graph = function(canvas, type, dataModel, options) {
 	};
 
 	this.type = type;
-	this.xrange = Grapher.data.getRange(dataModel.datasets, "x");
+	if (type == "scatter")
+		this.xrange = Grapher.data.getRange(dataModel.datasets, "x");
 	this.yrange = Grapher.data.getRange(dataModel.datasets, "y");
 	
 	this.rCallback = getOption("rCallback", function(){}); // on successful render
@@ -253,31 +254,31 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				
 				// draw axes
-				ctx.lineWidth = getOption("axesWidth", 2);
+				ctx.lineWidth = getOption("axesWidth", 1);
 				ctx.strokeStyle = getOption("axesColor", "rgba(124,124,124,0.95)");
 				r_xy.drawAxes({
-					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width, _gthis.height);
 				
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
 				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
-					x: optCoeff(getOption("axesWidth", 2)) + canvas.width/2,
-					y: 20 + optCoeff(getOption("axesWidth", 2))
+					x: optCoeff(getOption("axesWidth", 1)) + canvas.width/2,
+					y: 20 + optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width+50);
 				
 				// add xy-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXLabels(_gthis.xrange, {
-					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y + 20 - optCoeff(getOption("axesWidth", 2))
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y + 20 - optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width);
 				r_xy.drawYLabels(_gthis.yrange, {
-					x: _gthis.pos.x - 20 + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+					x: _gthis.pos.x - 20 + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 				}, _gthis.height);
 				
 				// add xy-axis labels
@@ -285,10 +286,10 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.font = getOption("axesFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXAxisLabel(_gthis.axisLabels.x, {
 					x: _gthis.pos.x + _gthis.width/2 + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y + 45 + optCoeff(getOption("axesWidth", 2))
+					y: _gthis.pos.y + 45 + optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width);
 				r_xy.drawYAxisLabel(_gthis.axisLabels.y, {
-					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 2)),
+					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 1)),
 					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 2))
 				}, _gthis.height);
 				
@@ -296,12 +297,12 @@ var Graph = function(canvas, type, dataModel, options) {
 				if (getOption("gridLines", false)) {
 					ctx.strokeStyle = getOption("gridLineColor", "rgba(164,164,164,0.9)");
 					r_xy.drawGridlines({ // draw along x axis
-						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height, false, _gthis.xrange);
 					r_xy.drawGridlines({ // draw along y axis
-						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height, true, _gthis.yrange);
 				}
 				
@@ -313,8 +314,8 @@ var Graph = function(canvas, type, dataModel, options) {
 					ctx.lineWidth = getDOption(dataModel.datasets[i], "pointLineWidth", 2);
 					r_xy.drawDataset(dataModel.datasets[i], 
 						_gthis.xrange, _gthis.yrange, {
-						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height);
 				}
 			};
@@ -328,31 +329,39 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				
 				// draw axes
-				ctx.lineWidth = getOption("axesWidth", 2);
+				ctx.lineWidth = getOption("axesWidth", 1);
 				ctx.strokeStyle = getOption("axesColor", "rgba(124,124,124,0.95)");
 				r_xy.drawAxes({
-					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width, _gthis.height);
 				
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
 				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
-					x: optCoeff(getOption("axesWidth", 2)) + canvas.width/2,
-					y: 20 + optCoeff(getOption("axesWidth", 2))
+					x: optCoeff(getOption("axesWidth", 1)) + canvas.width/2,
+					y: 20 + optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width+50);
+				
+				// add y-labels
+				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
+				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
+				r_xy.drawYLabels(_gthis.yrange, {
+					x: _gthis.pos.x - 20 + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
+				}, _gthis.height);
 				
 				// add xy-axis labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("axesFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXAxisLabel(_gthis.axisLabels.x, {
-					x: _gthis.pos.x + _gthis.width/2 + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y + 45 + optCoeff(getOption("axesWidth", 2))
+					x: _gthis.pos.x + _gthis.width/2 + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y + 45 + optCoeff(getOption("axesWidth", 1))
 				}, _gthis.width);
 				r_xy.drawYAxisLabel(_gthis.axisLabels.y, {
-					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 2))
+					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 1))
 				}, _gthis.height);
 				
 				// TODO: draw xy labels, data
