@@ -27,15 +27,16 @@ var Grapher = new function() {
 	
 	// specific data-manipulation functions:
 	this.data = {
-		getRange: function(datasets) {
-			var lower = datasets[0].x[0], upper = datasets[0].x[0], incr = 0;
+		getRange: function(datasets, t) {
+			// t - type (such as "x" or "y")
+			var lower = datasets[0][t][0], upper = datasets[0][t][0], incr = 0;
 			var num = 0;
 			for (var i=0; i<datasets.length; i++) {
-				if (datasets[i].x.length > 0) {
-					incr += datasets[i].x[1] - datasets[i].x[0];
+				if (datasets[i][t].length > 0) {
+					incr += datasets[i][t][1] - datasets[i][t][0];
 					num++; // increase count
 				}
-				for (var j=0, p=datasets[i].x[j]; j<datasets[i].x.length; j++, p=datasets[i].x[j])
+				for (var j=0, p=datasets[i][t][j]; j<datasets[i][t].length; j++, p=datasets[i][t][j])
 					lower = p<lower?p:lower, upper = p>upper?p:upper;
 			}
 			incr /= (num==0 ? 1 : num);
@@ -87,14 +88,14 @@ var Grapher = new function() {
 				
 			};
 			
-			this.drawDataset = function(dset, range, pos, width, height) {
+			this.drawDataset = function(dset, xrange, yrange, pos, width, height) {
 				// dset - our data set {x: ,y: }
 				// range - array of range data
 				// pos - starting point to draw data
 				// width, height - boundaries of data drawings
 				for (var i=0; i<dset.x.length; i++) {
-					var x = pos.x+(dset.x[i]/range.upper)*width,
-						y = pos.y-(dset.y[i]/range.upper)*height;
+					var x = pos.x+(dset.x[i]/xrange.upper)*width,
+						y = pos.y-(dset.y[i]/yrange.upper)*height;
 					ct.beginPath();
 					ct.arc(x, y, 5, 0, Math.PI*2, false);
 					ct.stroke();
@@ -164,7 +165,8 @@ var Graph = function(canvas, type, dataModel, options) {
 	this.height = canvas.height-100;
 	
 	this.type = type;
-	this.range = Grapher.data.getRange(dataModel.datasets);
+	this.xrange = Grapher.data.getRange(dataModel.datasets, "x");
+	this.yrange = Grapher.data.getRange(dataModel.datasets, "y");
 	
 	this.rCallback = getOption("rCallback", function(){}); // on successful render
 	this.eCallback = getOption("eCallback", function(){}); // on error
@@ -198,7 +200,7 @@ var Graph = function(canvas, type, dataModel, options) {
 				// add x-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
-				r_xy.drawXLabels(_gthis.range, {
+				r_xy.drawXLabels(_gthis.xrange, {
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
 				}, _gthis.width);
@@ -209,7 +211,8 @@ var Graph = function(canvas, type, dataModel, options) {
 										"fillStyle", "rgba(23,42,34,0.6)");
 					ctx.strokeStyle = getDOption(dataModel.datasets[i],
 										"strokeStyle", "rgba(32,4,3,0.6)");
-					r_xy.drawDataset(dataModel.datasets[i], _gthis.range,  {
+					r_xy.drawDataset(dataModel.datasets[i], 
+						_gthis.xrange, _gthis.yrange, {
 						x: 60 + optCoeff(ctx.lineWidth),
 						y: canvas.height - 60 - optCoeff(ctx.lineWidth)
 					}, _gthis.width, _gthis.height);
