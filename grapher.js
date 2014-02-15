@@ -35,34 +35,40 @@ var Grapher = new function() {
 		},
 		
 		/* gets a general distance between points k,k+1 using range */
-		getIncrement: function(dataset, length) {
-			// length - a restrictive unit (minimum increment)
+		getIncrement: function(dataset) {
 			var ndataset = dataset.slice(0).sort(function(a,b) { return a-b; });
 			var nnum = (ndataset[ndataset.length-1]-ndataset[0])/(ndataset.length-1);
-			var nincr = _this.data.hasDecimal(dataset) ? parseFloat(nnum.toFixed(2)) : Math.round(nnum);
-			return (typeof length != "undefined" )? (nincr<length ? length : nincr) : nincr;
+			return _this.data.hasDecimal(dataset) ? parseFloat(nnum.toFixed(2)) : Math.round(nnum);
 		},
 		
 		/* gets a general distance between points k,k+1 using arithmetic mean */
-		getAvgIncrement: function(dataset, length) {
-			// length - a restrictive unit (minimum increment)
+		getAvgIncrement: function(dataset) {
 			var isum = 0;
 			for (var i=1; i<dataset.length; i++)
 				isum += Math.abs(dataset[i]-dataset[i-1]);
-			var nincr = isum/(dataset.length-1) == 0 ? 1 : isum/(dataset.length-1);
-			return (typeof length != "undefined") ? (nincr<length ? length : nincr) : nincr;
+			return isum/(dataset.length-1) == 0 ? 1 : isum/(dataset.length-1);
 		},
 		
 		/* gets a general boundary between n datasets of k datapoints */
-		getRange: function(datasets, t) {
+		getRange: function(datasets, t, length) {
 			// t - type (such as "x" or "y")
-			var lower = datasets[0][t][0], upper = datasets[0][t][0], incr = 0;
-			for (var i=0; i<datasets.length; i++) {
-				incr += _this.data.getIncrement(datasets[0][t]);
+			// length - dimension to span range across (calculations are adjusted to this)
+			var lower = datasets[0][t][0], upper = datasets[0][t][0], incr = 0, incrA = 0;
+			// incr - increment
+			// incrA - increment (averaged)
+			for (var i=0; i<datasets.length; i++)
 				for (var j=0, p=datasets[i][t][j]; j<datasets[i][t].length; j++, p=datasets[i][t][j])
 					lower = p<lower?p:lower, upper = p>upper?p:upper;
+			
+			for (var i=0; i<datasets.length; i++) {
+				incrA += _this.data.getAvgIncrement(datasets[i][t]);
+				incr += _this.data.getIncrement(datasets[i][t]);
 			}
-			return _this.range(lower, upper, incr/datasets.length);
+			
+			var delta = Math.abs(upper-lower);
+			// ratios for increments
+			var rIncr = (delta/(incr/datasets.length))/length, rIncrA = (delta/(incrA/datasets.length))/length;
+			return _this.range(lower, upper, rIncr > 0.04 ? incrA/datasets.length : incr/datasets.length);
 		},
 		
 		/* creates a dataset object from another object */
@@ -238,7 +244,9 @@ var Grapher = new function() {
 			};
 			
 			/* draws valuation bars */
-			this.drawBars = function(dset, labelLen, yrange, pos, width, height) {
+			this.drawBars = function(dset, labelLen, yrange, pos, width, height, bar, barN) {
+				// bar - current bar number (if we have N bars) (starts at 0)
+				// barN - number of bars
 				var padding = 10;
 				// labelLen - number of labels
 				for (var i=0; i<labelLen && i<dset.y.length; i++) {
@@ -247,7 +255,7 @@ var Grapher = new function() {
 						rwidth = width/labelLen - padding;
 					ct.beginPath();
 					ct.moveTo(x, y);
-					ct.rect(x, y, rwidth, -(dset.y[i]/yrange.upper)*height); 
+					ct.rect(x+rwidth*(bar/barN), y, rwidth/barN, -(dset.y[i]/yrange.upper)*height); 
 					ct.stroke();
 					ct.fill();
 					ct.closePath();
@@ -317,8 +325,8 @@ var Graph = function(canvas, type, dataModel, options) {
 
 	this.type = type;
 	if (type == "scatter")
-		this.xrange = Grapher.data.getRange(dataModel.datasets, "x");
-	this.yrange = Grapher.data.getRange(dataModel.datasets, "y");
+		this.xrange = Grapher.data.getRange(dataModel.datasets, "x", _gthis.height);
+	this.yrange = Grapher.data.getRange(dataModel.datasets, "y", _gthis.width);
 	
 	this.rCallback = getOption("rCallback", function(){}); // on successful render
 	this.eCallback = getOption("eCallback", function(){}); // on error
@@ -476,7 +484,7 @@ var Graph = function(canvas, type, dataModel, options) {
 						dataModel.labels.length, _gthis.yrange, {
 						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
 						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
-					}, _gthis.width, _gthis.height);
+					}, _gthis.width, _gthis.height, i, dataModel.datasets.length);
 				}
 				
 				// TODO: draw xy labels, data
