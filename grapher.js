@@ -162,10 +162,19 @@ var Graph = function(canvas, type, dataModel, options) {
 		return getOption("sharpLines", true) ? (num%2 ? 0.5 : 0) : 0;
 	}
 	
-	// dimensions of the actual graph frame
-	this.width = canvas.width-100;
-	this.height = canvas.height-100;
+	this.axisLabels = {
+		x: ("xlabel" in dataModel) ? dataModel.xlabel : "",
+		y: ("ylabel" in dataModel) ? dataModel.ylabel : ""
+	};
 	
+	// geometry of the actual graph frame
+	this.width = canvas.width-100 + 20*(_gthis.axisLabels.x=="");
+	this.height = canvas.height-100 + 20*(_gthis.axisLabels.y=="");
+	this.pos = {
+		x: 40 + 20*(_gthis.axisLabels.x!=""),
+		y: canvas.height-40 - 20*(_gthis.axisLabels.y!="")
+	};
+
 	this.type = type;
 	this.xrange = Grapher.data.getRange(dataModel.datasets, "x");
 	this.yrange = Grapher.data.getRange(dataModel.datasets, "y");
@@ -187,8 +196,8 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.lineWidth = getOption("axesWidth", 2);
 				ctx.strokeStyle = getOption("axesColor", "rgba(124,124,124,0.95)");
 				r_xy.drawAxes({
-					x: 60 + optCoeff(ctx.lineWidth),
-					y: canvas.height - 60 - optCoeff(ctx.lineWidth)
+					x: _gthis.pos.x + optCoeff(ctx.lineWidth),
+					y: _gthis.pos.y - optCoeff(ctx.lineWidth)
 				}, _gthis.width, _gthis.height);
 				
 				// draw title
@@ -196,19 +205,19 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
 					x: optCoeff(ctx.lineWidth) + canvas.width/2,
-					y: 30+optCoeff(ctx.lineWidth)
+					y: 20+optCoeff(ctx.lineWidth)
 				}, _gthis.width+50);
 				
 				// add xy-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXLabels(_gthis.xrange, {
-					x: 60 + optCoeff(ctx.lineWidth),
-					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
+					x: _gthis.pos.x + optCoeff(ctx.lineWidth),
+					y: _gthis.pos.y + 20 - optCoeff(ctx.lineWidth)
 				}, _gthis.width);
 				r_xy.drawYLabels(_gthis.yrange, {
-					x: 40 + optCoeff(ctx.lineWidth),
-					y: canvas.height - 60 - optCoeff(ctx.lineWidth)
+					x: _gthis.pos.x - 20 + optCoeff(ctx.lineWidth),
+					y: _gthis.pos.y - optCoeff(ctx.lineWidth)
 				}, _gthis.height);
 				
 				// draw data points
@@ -219,8 +228,8 @@ var Graph = function(canvas, type, dataModel, options) {
 										"strokeStyle", "rgba(32,4,3,0.6)");
 					r_xy.drawDataset(dataModel.datasets[i], 
 						_gthis.xrange, _gthis.yrange, {
-						x: 60 + optCoeff(ctx.lineWidth),
-						y: canvas.height - 60 - optCoeff(ctx.lineWidth)
+						x: _gthis.pos.x + optCoeff(ctx.lineWidth),
+						y: _gthis.pos.y - optCoeff(ctx.lineWidth)
 					}, _gthis.width, _gthis.height);
 				}
 			};
