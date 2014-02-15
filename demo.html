@@ -30,10 +30,10 @@ window.onload = function() {
 				},
 				{ // data set 3
 					pointSize: 3,
-					drawLines: true,
+					drawLines: false,
 					strokeStyle: "rgba(12,145,122,0.7)",
-					x: [1,2,3],
-					y: [3,20,23]
+					x: Grapher.range(0,6),
+					y: [3, 20, 23, 63, 10, 24, 3]
 				}
 			]
 		},
@@ -51,6 +51,32 @@ window.onload = function() {
 			eCallback: function() {
 				console.log("An error occurred.");
 			}
+		}
+	));
+	
+	graphs.push(new Graph(document.getElementById("graph_scatter_mrand"), "scatter",
+		{
+			title: "Function Behavior of JavaScript's Math.random()",
+			xlabel: "Iteration",
+			ylabel: "Output",
+			datasets: [
+				{ // data set (random)
+					pointSize: 3,
+					drawLines: true,
+					strokeStyle: "rgba(123,85,182,0.7)",
+					x: Grapher.range(0,25),
+					y: Grapher.data.genRandomValues(Grapher.range(0,100), 25, true)
+				}
+			]
+		},
+		{ // options go here
+			bgColor: "#fbfbfb",
+			axesColor: "rgba(24,20,24,0.8)",
+			axesWidth: 1,
+			sharpLines: true,
+			labelColor: "rgba(44,44,44,0.9)",
+			labelFont: "10px Arial",
+			gridLines: true
 		}
 	));
 	
@@ -97,6 +123,11 @@ html, body {
 <div id="main_holder">
 	<div class="graphic_section">
 		<canvas id="graph_scatter" width="800" height="400">
+			Your browser does not support the HTML5 &lt;canvas&gt; specification.
+		</canvas>
+	</div>
+	<div class="graphic_section">
+		<canvas id="graph_scatter_mrand" width="800" height="400">
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>
 	</div>

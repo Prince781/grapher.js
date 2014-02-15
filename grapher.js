@@ -35,18 +35,22 @@ var Grapher = new function() {
 		},
 		
 		/* gets a general distance between points k,k+1 using range */
-		getIncrement: function(dataset) {
+		getIncrement: function(dataset, length) {
+			// length - a restrictive unit (minimum increment)
 			var ndataset = dataset.slice(0).sort(function(a,b) { return a-b; });
 			var nnum = (ndataset[ndataset.length-1]-ndataset[0])/(ndataset.length-1);
-			return _this.data.hasDecimal(dataset) ? parseFloat(nnum.toFixed(2)) : Math.round(nnum);
+			var nincr = _this.data.hasDecimal(dataset) ? parseFloat(nnum.toFixed(2)) : Math.round(nnum);
+			return (typeof length != "undefined" )? (nincr<length ? length : nincr) : nincr;
 		},
 		
 		/* gets a general distance between points k,k+1 using arithmetic mean */
-		getAvgIncrement: function(dataset) {
+		getAvgIncrement: function(dataset, length) {
+			// length - a restrictive unit (minimum increment)
 			var isum = 0;
 			for (var i=1; i<dataset.length; i++)
 				isum += Math.abs(dataset[i]-dataset[i-1]);
-			return isum/(dataset.length-1) == 0 ? 1 : isum/(dataset.length-1);
+			var nincr = isum/(dataset.length-1) == 0 ? 1 : isum/(dataset.length-1);
+			return (typeof length != "undefined") ? (nincr<length ? length : nincr) : nincr;
 		},
 		
 		/* gets a general boundary between n datasets of k datapoints */
@@ -71,6 +75,19 @@ var Grapher = new function() {
 			return {x: keys, y: vals};
 		},
 		
+		/* creates random y points */
+		genRandomValues: function(range, l, wholeNumbers) {
+			// l - length of data
+			// wholeNumbers - whether or not to use whole numbers
+			var vals = [];
+			for (var i=0; i<l; i++)
+				vals.push(wholeNumbers ? range.lower
+						+ Math.round(Math.random()*(range.upper-range.lower))
+					: range.lower + Math.random()*(range.upper-range.lower));
+			return vals;
+		},
+		
+		// analysis functions:
 		/* find y=α+βx, best fit for k elements */
 		linearRegression: function(dataset, xrange, yrange, aIncr, minB, maxB, BIncr, xName, yName) {
 			var models = [];
@@ -382,6 +399,9 @@ var Graph = function(canvas, type, dataModel, options) {
 						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height);
 				}
+				
+				// draw any additional functions for the data:
+				
 			};
 			break;
 		case "bar": // TODO: bar chart
