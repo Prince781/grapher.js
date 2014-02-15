@@ -27,10 +27,18 @@ var Grapher = new function() {
 	
 	// specific data-manipulation functions:
 	this.data = {
+		/* determines if our dataset contains a floating point */
+		hasDecimal: function(dataset) {
+			for (var i=0; i<dataset.length; i++)
+				if (dataset[i] % 1 != 0) return true;
+			return false;
+		},
+		
 		/* gets a general distance between points k,k+1 using range */
 		getIncrement: function(dataset) {
 			var ndataset = dataset.slice(0).sort(function(a,b) { return a-b; });
-			return parseFloat(((ndataset[ndataset.length-1]-ndataset[0])/ndataset.length).toFixed(2));
+			var nnum = (ndataset[ndataset.length-1]-ndataset[0])/(ndataset.length-1);
+			return _this.data.hasDecimal(dataset) ? parseFloat(nnum.toFixed(2)) : Math.round(nnum);
 		},
 		
 		/* gets a general distance between points k,k+1 using arithmetic mean */
@@ -102,7 +110,6 @@ var Grapher = new function() {
 		},
 		xy: function(ct) {
 			// ct - context
-			
 			/* draws a title at the top of the chart */
 			this.drawTitle = function(text, pos, width) {
 				// text - title text
