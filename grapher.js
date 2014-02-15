@@ -27,8 +27,16 @@ var Grapher = new function() {
 			// ct - context
 			
 			/* draws a title at the top of the chart */
-			this.drawTitle = function(text, pos) {
+			this.drawTitle = function(text, pos, width) {
 				// text - title text
+				var ellipLen = ct.measureText("...").width;
+				// cut off overflowing text
+				if (ct.measureText(text).width > width) {
+					while (ct.measureText(text).width+ellipLen > width 
+							&& text.length > 0)
+						text = text.substr(0,text.length-1);
+					text += "...";
+				}
 				ct.textAlign = "center";
 				ct.fillText(text, pos.x, pos.y);
 			};
@@ -48,8 +56,7 @@ var Grapher = new function() {
 			this.drawXLabels = function(xdata, pos, width) {
 				// pos - {x: num, y: num}
 				for (var i=0; i<xdata.length; i++)
-					ct.fillText(xdata[i], pos.x+i*(width/(xdata.length-1))
-								- ct.measureText(xdata[i]).width/2, pos.y);
+					ct.fillText(xdata[i], pos.x+i*(width/(xdata.length-1)), pos.y);
 			};
 			
 			/* draws y-data and ranges adjacent to the graph */
@@ -136,15 +143,15 @@ var Graph = function(canvas, type, dataModel, options) {
 				
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
-				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica");
+				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
-					x: 60+optCoeff(ctx.lineWidth) + (canvas.width-100)/2,
+					x: optCoeff(ctx.lineWidth) + canvas.width/2,
 					y: 30+optCoeff(ctx.lineWidth)
-				});
+				}, canvas.width-50);
 				
 				// add x-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
-				ctx.font = getOption("labelFont", "12px Arial");
+				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXLabels(dataModel.x, {
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
