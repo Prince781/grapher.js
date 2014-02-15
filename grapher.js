@@ -17,7 +17,7 @@ var Grapher = new function() {
 		var incr = typeof increment == "undefined" || increment <= 0 ? 1 : increment;
 		var arr = [];
 		for (var i=l; i<=u; i+=incr)
-			arr.push(i);
+			arr.push(parseFloat(i.toFixed(2)));
 		
 		arr.lower = l;
 		arr.upper = u;
@@ -27,21 +27,30 @@ var Grapher = new function() {
 	
 	// specific data-manipulation functions:
 	this.data = {
+		/* gets a general distance between points k,k+1 using range */
+		getIncrement: function(dataset) {
+			var ndataset = dataset.slice(0).sort(function(a,b) { return a-b; });
+			return parseFloat(((ndataset[ndataset.length-1]-ndataset[0])/ndataset.length).toFixed(2));
+		},
+		
+		/* gets a general distance between points k,k+1 using arithmetic mean */
+		getAvgIncrement: function(dataset) {
+			var isum = 0;
+			for (var i=1; i<dataset.length; i++)
+				isum += Math.abs(dataset[i]-dataset[i-1]);
+			return isum/(dataset.length-1) == 0 ? 1 : isum/(dataset.length-1);
+		},
+		
 		/* gets a general boundary between n datasets of k datapoints */
 		getRange: function(datasets, t) {
 			// t - type (such as "x" or "y")
 			var lower = datasets[0][t][0], upper = datasets[0][t][0], incr = 0;
-			var num = 0;
 			for (var i=0; i<datasets.length; i++) {
-				if (datasets[i][t].length > 0) {
-					incr += datasets[i][t][1] - datasets[i][t][0];
-					num++; // increase count
-				}
+				incr += _this.data.getIncrement(datasets[0][t]);
 				for (var j=0, p=datasets[i][t][j]; j<datasets[i][t].length; j++, p=datasets[i][t][j])
 					lower = p<lower?p:lower, upper = p>upper?p:upper;
 			}
-			incr /= (num==0 ? 1 : num);
-			return _this.range(lower, upper, incr);
+			return _this.range(lower, upper, incr/datasets.length);
 		},
 		
 		/* creates a dataset object from another object */
@@ -84,8 +93,7 @@ var Grapher = new function() {
 				var ellipLen = ct.measureText("...").width;
 				// cut off overflowing text
 				if (ct.measureText(text).width > length) {
-					while (ct.measureText(text).width+ellipLen > length
-							&& text.length > 0)
+					while (ct.measureText(text).width+ellipLen > length && text.length > 0)
 						text = text.substr(0,text.length-1);
 					text += "...";
 				}
