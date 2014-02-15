@@ -1,6 +1,8 @@
 grapher.js
 ==========
 
+![Scatterplot in grapher.js](doc/shots/scatter1.png)
+
 A data visualization API for the web (a middle ground between Chart.js and D3.js). Idea for PennApps 2014.
 
 Example usage: 
