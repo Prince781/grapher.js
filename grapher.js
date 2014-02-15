@@ -144,7 +144,7 @@ var Grapher = new function() {
 				// pos - starting point to draw data
 				// width, height - boundaries of data drawings
 				var init = true, drawLines = ("drawLines" in dset)?dset.drawLines:false;
-				for (var i=0; i<dset.x.length; i++) {
+				for (var i=0; i<dset.x.length && i<dset.y.length; i++) {
 					var x = pos.x+(dset.x[i]/xrange.upper)*width,
 						y = pos.y-(dset.y[i]/yrange.upper)*height;
 
@@ -170,6 +170,30 @@ var Grapher = new function() {
 						ct.moveTo(x, y);
 						ct.lineWidth = llWidth;
 					}
+				}
+			};
+		},
+		bar: function(ct) {
+			/* draw bar-chart labels for a specified length of data */
+			this.drawXLabels = function(labels, pos, width) {
+				for (var i=0; i<labels.length; i++)
+					ct.fillText(labels[i], pos.x + (i + 1/2)*width/labels.length, pos.y);
+			};
+			
+			/* draws valuation bars */
+			this.drawBars = function(dset, labelLen, yrange, pos, width, height) {
+				var padding = 10;
+				// labelLen - number of labels
+				for (var i=0; i<labelLen && i<dset.y.length; i++) {
+					var x = pos.x+i/labelLen*width + padding/2,
+						y = pos.y,
+						rwidth = width/labelLen - padding;
+					ct.beginPath();
+					ct.moveTo(x, y);
+					ct.rect(x, y, rwidth, -(dset.y[i]/yrange.upper)*height); 
+					ct.stroke();
+					ct.fill();
+					ct.closePath();
 				}
 			};
 		}
@@ -210,7 +234,6 @@ var Graph = function(canvas, type, dataModel, options) {
 	}
 	var ctx = canvas.getContext("2d");
 	// format: r_<type> denotes a renderer of type "<type>"
-	var r_xy = new Grapher.renderers.xy(ctx); // create a new xy renderer
 	
 	
 	// default render functions:
@@ -228,11 +251,11 @@ var Graph = function(canvas, type, dataModel, options) {
 	};
 	
 	// geometry of the actual graph frame
-	this.width = canvas.width-100 + 20*(_gthis.axisLabels.x=="");
-	this.height = canvas.height-100 + 20*(_gthis.axisLabels.y=="");
+	this.width = canvas.width-100 + 20*(_gthis.axisLabels.y=="");
+	this.height = canvas.height-100 + 20*(_gthis.axisLabels.x=="");
 	this.pos = {
-		x: 40 + 20*(_gthis.axisLabels.x!=""),
-		y: canvas.height-40 - 20*(_gthis.axisLabels.y!="")
+		x: 40 + 20*(_gthis.axisLabels.y!=""),
+		y: canvas.height-40 - 20*(_gthis.axisLabels.x!="")
 	};
 
 	this.type = type;
@@ -247,6 +270,7 @@ var Graph = function(canvas, type, dataModel, options) {
 	switch (type) {
 		case "scatter":
 			_gthis.render = function() {
+				var r_xy = new Grapher.renderers.xy(ctx); // create a new xy renderer
 				fRenderer(); // do this first
 				
 				// fill background color
@@ -322,6 +346,8 @@ var Graph = function(canvas, type, dataModel, options) {
 			break;
 		case "bar": // TODO: bar chart
 			_gthis.render = function() {
+				var r_xy = new Grapher.renderers.xy(ctx), // create a new xy renderer
+					r_bar = new Grapher.renderers.bar(ctx);
 				fRenderer(); // do this first
 				
 				// fill background color
@@ -347,6 +373,11 @@ var Graph = function(canvas, type, dataModel, options) {
 				// add y-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
+				r_bar.drawXLabels(dataModel.labels, {
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+					y: _gthis.pos.y + 20 - optCoeff(getOption("axesWidth", 1))
+				}, _gthis.width);
+				// add y-labels
 				r_xy.drawYLabels(_gthis.yrange, {
 					x: _gthis.pos.x - 20 + optCoeff(getOption("axesWidth", 1)),
 					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
@@ -363,6 +394,30 @@ var Graph = function(canvas, type, dataModel, options) {
 					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 1)),
 					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 1))
 				}, _gthis.height);
+				
+				// add y gridlines
+				if (getOption("gridLines", false)) {
+					ctx.strokeStyle = getOption("gridLineColor", "rgba(164,164,164,0.9)");
+					r_xy.drawGridlines({ // draw along y axis
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
+					}, _gthis.width, _gthis.height, true, _gthis.yrange);
+				}
+				
+				// draw data bars
+				for (var i=0; i<dataModel.datasets.length; i++) {
+					ctx.fillStyle = getDOption(dataModel.datasets[i], 
+									"fillStyle", "rgba(23,23,123,0.8)");
+					ctx.strokeStyle = ctx.fillStyle;
+					ctx.lineWidth = getDOption(dataModel.datasets[i], "outlineWidth", 2);
+					ctx.font = getDOption(dataModel.datasets[i], "font", 
+									"12px Trebuchet MS, Helvetica, sans-serif");
+					r_bar.drawBars(dataModel.datasets[i], 
+						dataModel.labels.length, _gthis.yrange, {
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
+					}, _gthis.width, _gthis.height);
+				}
 				
 				// TODO: draw xy labels, data
 			};
