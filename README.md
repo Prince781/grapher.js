@@ -12,16 +12,16 @@ var graph = new Graph(document.getElementById("graph"), "scatter",
 	{ // data goes here
 		title: "Relationship Between Boilerplate Temperature and Time",
 		xdata: Grapher.range(0, 130),
-		ydata: [130, 249, 49, 14, 34],
+		ydata: [130, 249, 49, 14, 34]
 	},
 	{ // options go here
 		axesColor: "rgba(24,20,24,0.8)",
 		axesWidth: 1,
 		rCallback: function() { 
-			console.log("Rendered a frame successfully.") 
+			console.log("Rendered a frame successfully.");
 		},
 		eCallback: function() {
-			console.log("An error occurred.")
+			console.log("An error occurred.");
 		}
 	}
 );

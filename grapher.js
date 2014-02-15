@@ -16,7 +16,7 @@ var Grapher = new function() {
 		// u - upper bound
 		var incr = typeof increment == "undefined" ? 1 : increment;
 		var arr = [];
-		for (var i=l; i<u; i++)
+		for (var i=l; i<=u; i++)
 			arr.push(l+i*incr);
 		return arr;
 	};
@@ -25,6 +25,14 @@ var Grapher = new function() {
 	this.renderers = {
 		xy: function(ct) {
 			// ct - context
+			
+			/* draws a title at the top of the chart */
+			this.drawTitle = function(text, pos) {
+				// text - title text
+				ct.textAlign = "center";
+				ct.fillText(text, pos.x, pos.y);
+			};
+			
 			/* draws xy axes for a scatter/box plot */
 			this.drawAxes = function(pos, width, height) {
 				// pos - {x: num, y: num}
@@ -34,6 +42,20 @@ var Grapher = new function() {
 				ct.lineTo(pos.x+width, pos.y);
 				ct.stroke();
 				ct.closePath();
+			};
+			
+			/* draws x-labels underneath the graph */
+			this.drawXLabels = function(xdata, pos, width) {
+				// pos - {x: num, y: num}
+				for (var i=0; i<xdata.length; i++)
+					ct.fillText(xdata[i], pos.x+i*(width/(xdata.length-1))
+								- ct.measureText(xdata[i]).width/2, pos.y);
+			};
+			
+			/* draws y-data and ranges adjacent to the graph */
+			this.drawYRange = function(ydata, pos, height) {
+				// pos - {x: num, y: num}
+				
 			};
 		}
 	};
@@ -82,6 +104,10 @@ var Graph = function(canvas, type, dataModel, options) {
 	function fRenderer() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
+	function optCoeff(num) {
+		// optimized coefficient (numbers%2==1 need 0.5, else do not)
+		return getOption("sharpLines", true) ? (num%2 ? 0.5 : 0) : 0;
+	}
 	
 	this.type = type;
 	this.idata = []; // contains independent variables/labels
@@ -95,12 +121,35 @@ var Graph = function(canvas, type, dataModel, options) {
 		case "scatter":
 			_gthis.render = function() {
 				fRenderer(); // do this first
-				//ctx.strokeStyle = "rgba(0,0,0,1)";
 				
+				// fill background color
+				ctx.fillStyle = getOption("bgColor", "rgba(0,0,0,0)");
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				
+				// draw axes
 				ctx.lineWidth = getOption("axesWidth", 2);
 				ctx.strokeStyle = getOption("axesColor", "rgba(124,124,124,0.95)");
-				r_xy.drawAxes({x:60.5,y:canvas.height-60.5}, canvas.width-100, canvas.height-100);
+				r_xy.drawAxes({
+					x: 60 + optCoeff(ctx.lineWidth),
+					y: canvas.height - 60 - optCoeff(ctx.lineWidth)
+				}, canvas.width-100, canvas.height-100);
+				
+				// draw title
+				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
+				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica");
+				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
+					x: 60+optCoeff(ctx.lineWidth) + (canvas.width-100)/2,
+					y: 30+optCoeff(ctx.lineWidth)
+				});
+				
+				// add x-labels
+				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
+				ctx.font = getOption("labelFont", "12px Arial");
+				r_xy.drawXLabels(dataModel.x, {
+					x: 60 + optCoeff(ctx.lineWidth),
+					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
+				}, canvas.width-100);
+				
 			};
 			break;
 		default:
