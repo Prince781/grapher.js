@@ -208,8 +208,8 @@ var Grapher = new function() {
 				// width, height - boundaries of data drawings
 				var init = true, drawLines = ("drawLines" in dset)?dset.drawLines:false;
 				for (var i=0; i<dset.x.length && i<dset.y.length; i++) {
-					var x = pos.x+(dset.x[i]/xrange.upper)*width,
-						y = pos.y-(dset.y[i]/yrange.upper)*height;
+					var x = pos.x+((dset.x[i]-xrange.lower)/(xrange.upper-xrange.lower))*width,
+						y = pos.y-((dset.y[i]-yrange.lower)/(yrange.upper-yrange.lower))*height;
 
 					if (!init && drawLines) {
 						init = false;
@@ -252,10 +252,11 @@ var Grapher = new function() {
 				for (var i=0; i<labelLen && i<dset.y.length; i++) {
 					var x = pos.x+i/labelLen*width + padding/2,
 						y = pos.y,
-						rwidth = width/labelLen - padding;
+						rwidth = width/labelLen - padding,
+						rheight = -((dset.y[i]-yrange.lower)/(yrange.upper-yrange.lower))*height;
 					ct.beginPath();
 					ct.moveTo(x, y);
-					ct.rect(x+rwidth*(bar/barN), y, rwidth/barN, -(dset.y[i]/yrange.upper)*height); 
+					ct.rect(x+rwidth*(bar/barN), y, rwidth/barN, rheight); 
 					ct.stroke();
 					ct.fill();
 					ct.closePath();
