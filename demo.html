@@ -13,12 +13,17 @@ window.onload = function() {
 			ylabel: "Temperature (deg C)",
 			datasets: [
 				{ // data set 1
-					pointSize: 5,
+					pointSize: 4,
+					pointLineWidth: 2,
+					drawLines: true,
+					strokeStyle: "rgba(142,35,52,0.7)",
 					x: Grapher.range(0,24),
 					y: [23, 41, 39, 39, 140, 39, 109, 38, 22, 109, 34, 1, 3, 49, 20, 34, 29, 0, 6, 7, 33, 24, 45, 39]
 				},
 				{ // data set 2
 					pointSize: 3,
+					drawLines: true,
+					strokeStyle: "rgba(122,145,12,0.7)",
 					x: Grapher.range(1,3),
 					y: [3, 2, 40]
 				}

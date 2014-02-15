@@ -118,14 +118,33 @@ var Grapher = new function() {
 				// range - array of range data
 				// pos - starting point to draw data
 				// width, height - boundaries of data drawings
+				var init = true, drawLines = ("drawLines" in dset)?dset.drawLines:false;
 				for (var i=0; i<dset.x.length; i++) {
 					var x = pos.x+(dset.x[i]/xrange.upper)*width,
 						y = pos.y-(dset.y[i]/yrange.upper)*height;
+
+					if (!init && drawLines) {
+						init = false;
+						ct.lineTo(x, y); // from lpos.x,lpos.y
+						ct.stroke();
+						ct.closePath();
+					} else init = false;
+					
+					// draw data circle
 					ct.beginPath();
-					ct.arc(x, y, ("pointSize" in dset) ? dset.pointSize : 4,
-							0, Math.PI*2, false);
+					ct.arc(x, y, ("pointSize" in dset) ? dset.pointSize : 4, 0, Math.PI*2);
 					ct.stroke();
+					ct.fill();
 					ct.closePath();
+					
+					// prepare for next node in line
+					if (i < dset.x.length - 1 && drawLines) {
+						var llWidth = ct.lineWidth; // save old line width
+						ct.lineWidth += 2;
+						ct.beginPath();
+						ct.moveTo(x, y);
+						ct.lineWidth = llWidth;
+					}
 				}
 			};
 		}
@@ -250,16 +269,55 @@ var Graph = function(canvas, type, dataModel, options) {
 				
 				// draw data points
 				for (var i=0; i<dataModel.datasets.length; i++) {
-					ctx.fillStyle = getDOption(dataModel.datasets[i],
-										"fillStyle", "rgba(23,42,34,0.6)");
+					ctx.fillStyle = getDOption(dataModel.datasets[i], "fillStyle", "rgba(210,210,210,0.3)");
 					ctx.strokeStyle = getDOption(dataModel.datasets[i],
 										"strokeStyle", "rgba(32,4,3,0.6)");
+					ctx.lineWidth = getDOption(dataModel.datasets[i], "pointLineWidth", 2);
 					r_xy.drawDataset(dataModel.datasets[i], 
 						_gthis.xrange, _gthis.yrange, {
 						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
 						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
 					}, _gthis.width, _gthis.height);
 				}
+			};
+			break;
+		case "bar": // TODO: bar chart
+			_gthis.render = function() {
+				fRenderer(); // do this first
+				
+				// fill background color
+				ctx.fillStyle = getOption("bgColor", "rgba(0,0,0,0)");
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				
+				// draw axes
+				ctx.lineWidth = getOption("axesWidth", 2);
+				ctx.strokeStyle = getOption("axesColor", "rgba(124,124,124,0.95)");
+				r_xy.drawAxes({
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+				}, _gthis.width, _gthis.height);
+				
+				// draw title
+				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
+				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
+				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
+					x: optCoeff(getOption("axesWidth", 2)) + canvas.width/2,
+					y: 20 + optCoeff(getOption("axesWidth", 2))
+				}, _gthis.width+50);
+				
+				// add xy-axis labels
+				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
+				ctx.font = getOption("axesFont", "12px Trebuchet MS, Helvetica, sans-serif");
+				r_xy.drawXAxisLabel(_gthis.axisLabels.x, {
+					x: _gthis.pos.x + _gthis.width/2 + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y + 45 + optCoeff(getOption("axesWidth", 2))
+				}, _gthis.width);
+				r_xy.drawYAxisLabel(_gthis.axisLabels.y, {
+					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 2))
+				}, _gthis.height);
+				
+				// TODO: draw xy labels, data
 			};
 			break;
 		default:
