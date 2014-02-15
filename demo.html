@@ -50,15 +50,20 @@ window.onload = function() {
 	graphs.push(new Graph(document.getElementById("graph_bar"), "bar",
 		{ // information (data) goes here
 			title: "Number of \"Tutturu~\" References Per Steins;Gate Episode",
-			labels: ["Ep 1", "Ep 2", "Ep 3", "Ep 4", "Ep 5", "Ep 6"],
+			labels: (function() {
+				var rn = Grapher.range(1,12);
+				for (var i=0; i<rn.length; i++)
+					rn[i] = "Ep "+rn[i];
+				return rn;
+			})(),
 			datasets: [
 				{ // data set 1
 					pointSize: 4,
 					pointLineWidth: 2,
 					drawLines: true,
-					fillStyle: "rgba(142,35,52,0.7)",
-					strokeStyle: "rgba(142,35,52,0.7)",
-					y: [0, 2, 3, 4, 5, 6, 3, 2, 1]
+					fillStyle: "rgba(35,142,52,0.7)",
+					strokeStyle: "rgba(35,142,52,0.7)",
+					y: [0, 2, 3, 4, 5, 6, 3, 2, 4, 7, 5, 4]
 				}
 			]
 		},

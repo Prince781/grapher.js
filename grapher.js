@@ -17,7 +17,7 @@ var Grapher = new function() {
 		var incr = typeof increment == "undefined" || increment <= 0 ? 1 : increment;
 		var arr = [];
 		for (var i=l; i<=u; i+=incr)
-			arr.push(l+i);
+			arr.push(i);
 		
 		arr.lower = l;
 		arr.upper = u;
