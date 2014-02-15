@@ -76,16 +76,17 @@ var Grapher = new function() {
 			};
 			
 			/* draws x-labels underneath the graph */
-			this.drawXLabels = function(xdata, pos, width) {
+			this.drawXLabels = function(xrange, pos, width) {
 				// pos - {x: num, y: num}
-				for (var i=0; i<xdata.length; i++)
-					ct.fillText(xdata[i], pos.x+i*(width/(xdata.length-1)), pos.y);
+				for (var i=0; i<xrange.length; i++)
+					ct.fillText(xrange[i], pos.x+i*(width/(xrange.length-1)), pos.y);
 			};
 			
 			/* draws y-axis range adjacent to the graph */
-			this.drawYRange = function(ydata, pos, height) {
+			this.drawYLabels = function(yrange, pos, height) {
 				// pos - {x: num, y: num}
-				
+				for (var i=0; i<yrange.length; i++)
+					ct.fillText(yrange[i], pos.x, pos.y-i*(height/(yrange.length-1)));
 			};
 			
 			this.drawDataset = function(dset, xrange, yrange, pos, width, height) {
@@ -97,7 +98,8 @@ var Grapher = new function() {
 					var x = pos.x+(dset.x[i]/xrange.upper)*width,
 						y = pos.y-(dset.y[i]/yrange.upper)*height;
 					ct.beginPath();
-					ct.arc(x, y, 5, 0, Math.PI*2, false);
+					ct.arc(x, y, ("pointSize" in dset) ? dset.pointSize : 4,
+							0, Math.PI*2, false);
 					ct.stroke();
 					ct.closePath();
 				}
@@ -197,13 +199,17 @@ var Graph = function(canvas, type, dataModel, options) {
 					y: 30+optCoeff(ctx.lineWidth)
 				}, _gthis.width+50);
 				
-				// add x-labels
+				// add xy-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXLabels(_gthis.xrange, {
 					x: 60 + optCoeff(ctx.lineWidth),
 					y: canvas.height - 40 - optCoeff(ctx.lineWidth)
 				}, _gthis.width);
+				r_xy.drawYLabels(_gthis.yrange, {
+					x: 40 + optCoeff(ctx.lineWidth),
+					y: canvas.height - 60 - optCoeff(ctx.lineWidth)
+				}, _gthis.height);
 				
 				// draw data points
 				for (var i=0; i<dataModel.datasets.length; i++) {
