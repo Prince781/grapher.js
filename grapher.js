@@ -46,20 +46,27 @@ var Grapher = new function() {
 	
 	// specific render functions:
 	this.renderers = {
+		misc: function(ct) {
+			this.cutTextToLength = function(text, length) {
+				var ellipLen = ct.measureText("...").width;
+				// cut off overflowing text
+				if (ct.measureText(text).width > length) {
+					while (ct.measureText(text).width+ellipLen > length
+							&& text.length > 0)
+						text = text.substr(0,text.length-1);
+					text += "...";
+				}
+				return text;
+			};
+		},
 		xy: function(ct) {
 			// ct - context
 			
 			/* draws a title at the top of the chart */
 			this.drawTitle = function(text, pos, width) {
 				// text - title text
-				var ellipLen = ct.measureText("...").width;
-				// cut off overflowing text
-				if (ct.measureText(text).width > width) {
-					while (ct.measureText(text).width+ellipLen > width 
-							&& text.length > 0)
-						text = text.substr(0,text.length-1);
-					text += "...";
-				}
+				var miscRenderer = new _this.renderers.misc(ct);
+				text = miscRenderer.cutTextToLength(text, width);
 				ct.textAlign = "center";
 				ct.fillText(text, pos.x, pos.y);
 			};
@@ -89,6 +96,14 @@ var Grapher = new function() {
 					ct.fillText(yrange[i], pos.x, pos.y-i*(height/(yrange.length-1)));
 			};
 			
+			/* draws an axis label across the x-axis */
+			this.drawXAxisLabel = function(text, pos, width) {
+				var miscRenderer = new _this.renderers.misc(ct);
+				text = miscRenderer.cutTextToLength(text, width);
+				ct.fillText(text, pos.x, pos.y);
+			};
+			
+			/* draws xy-datapoints across the graph */
 			this.drawDataset = function(dset, xrange, yrange, pos, width, height) {
 				// dset - our data set {x: ,y: }
 				// range - array of range data
@@ -125,13 +140,6 @@ var Grapher = new function() {
 var Graph = function(canvas, type, dataModel, options) {
 	// canvas - the canvas element to use
 	// type - a preset type to use
-	/**
-	 * options: 
-	 * rCallback: function
-	 * eCallback: function
-	 */
-	// rCallback - (optional) called after rendering has completed
-	// eCallback - (optional) potentially called after an error
 	if (canvas.tagName != "CANVAS")
 		throw "GraphModel: param \"canvas\" is not actually a <canvas> element.";
 
@@ -196,29 +204,37 @@ var Graph = function(canvas, type, dataModel, options) {
 				ctx.lineWidth = getOption("axesWidth", 2);
 				ctx.strokeStyle = getOption("axesColor", "rgba(124,124,124,0.95)");
 				r_xy.drawAxes({
-					x: _gthis.pos.x + optCoeff(ctx.lineWidth),
-					y: _gthis.pos.y - optCoeff(ctx.lineWidth)
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
 				}, _gthis.width, _gthis.height);
 				
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
 				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
-					x: optCoeff(ctx.lineWidth) + canvas.width/2,
-					y: 20+optCoeff(ctx.lineWidth)
+					x: optCoeff(getOption("axesWidth", 2)) + canvas.width/2,
+					y: 20 + optCoeff(getOption("axesWidth", 2))
 				}, _gthis.width+50);
 				
 				// add xy-labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("labelFont", "12px Trebuchet MS, Helvetica, sans-serif");
 				r_xy.drawXLabels(_gthis.xrange, {
-					x: _gthis.pos.x + optCoeff(ctx.lineWidth),
-					y: _gthis.pos.y + 20 - optCoeff(ctx.lineWidth)
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y + 20 - optCoeff(getOption("axesWidth", 2))
 				}, _gthis.width);
 				r_xy.drawYLabels(_gthis.yrange, {
-					x: _gthis.pos.x - 20 + optCoeff(ctx.lineWidth),
-					y: _gthis.pos.y - optCoeff(ctx.lineWidth)
+					x: _gthis.pos.x - 20 + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
 				}, _gthis.height);
+				
+				// add xy-axis labels
+				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
+				ctx.font = getOption("axesFont", "12px Trebuchet MS, Helvetica, sans-serif");
+				r_xy.drawXAxisLabel({
+					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y - 20 + optCoeff(getOption("axesWidth", 2))
+				}, _gthis.width);
 				
 				// draw data points
 				for (var i=0; i<dataModel.datasets.length; i++) {
@@ -228,8 +244,8 @@ var Graph = function(canvas, type, dataModel, options) {
 										"strokeStyle", "rgba(32,4,3,0.6)");
 					r_xy.drawDataset(dataModel.datasets[i], 
 						_gthis.xrange, _gthis.yrange, {
-						x: _gthis.pos.x + optCoeff(ctx.lineWidth),
-						y: _gthis.pos.y - optCoeff(ctx.lineWidth)
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
 					}, _gthis.width, _gthis.height);
 				}
 			};
