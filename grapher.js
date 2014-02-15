@@ -82,6 +82,23 @@ var Grapher = new function() {
 				ct.closePath();
 			};
 			
+			/* draws xy gridlines for a scatter/box plot */
+			this.drawGridlines = function(pos, width, height, orientation, range) {
+				// orientation = {0: y-axis, 1: x-axis} length=height,length=width
+				// pos - {x: num, y: num}
+				for (var i=0; i<range.length; i++) {
+					var spos = {
+						x: pos.x+i*(!orientation)*(width/(range.length-1)),
+						y: pos.y-i*orientation*(height/(range.length-1))
+					};
+					ct.beginPath();
+					ct.moveTo(spos.x, spos.y);
+					ct.lineTo(spos.x+orientation*width, spos.y-(!orientation)*height);
+					ct.stroke();
+					ct.closePath();
+				}
+			};
+			
 			/* draws x-labels underneath the graph */
 			this.drawXLabels = function(xrange, pos, width) {
 				// pos - {x: num, y: num}
@@ -266,6 +283,19 @@ var Graph = function(canvas, type, dataModel, options) {
 					x: _gthis.pos.x - 45 + optCoeff(getOption("axesWidth", 2)),
 					y: _gthis.pos.y - _gthis.height/2 + optCoeff(getOption("axesWidth", 2))
 				}, _gthis.height);
+				
+				// add xy gridlines
+				if (getOption("gridLines", false)) {
+					ctx.strokeStyle = getOption("gridLineColor", "rgba(164,164,164,0.9)");
+					r_xy.drawGridlines({ // draw along x axis
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+					}, _gthis.width, _gthis.height, false, _gthis.xrange);
+					r_xy.drawGridlines({ // draw along y axis
+						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
+						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 2))
+					}, _gthis.width, _gthis.height, true, _gthis.yrange);
+				}
 				
 				// draw data points
 				for (var i=0; i<dataModel.datasets.length; i++) {
