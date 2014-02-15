@@ -27,6 +27,7 @@ var Grapher = new function() {
 	
 	// specific data-manipulation functions:
 	this.data = {
+		/* gets a general boundary between n datasets of k datapoints */
 		getRange: function(datasets, t) {
 			// t - type (such as "x" or "y")
 			var lower = datasets[0][t][0], upper = datasets[0][t][0], incr = 0;
@@ -42,6 +43,8 @@ var Grapher = new function() {
 			incr /= (num==0 ? 1 : num);
 			return _this.range(lower, upper, incr);
 		},
+		
+		/* creates a dataset object from another object */
 		toDataset: function(dataset, keyName, valName) {
 			var keys = [], vals = [];
 			for (var i=0; i<dataset[keyName].length && i<dataset[valName].length; i++) {
@@ -49,6 +52,28 @@ var Grapher = new function() {
 				vals[i] = dataset[valName][i];
 			}
 			return {x: keys, y: vals};
+		},
+		
+		/* find y=α+βx, best fit for k elements */
+		linearRegression: function(dataset, xrange, yrange, aIncr, minB, maxB, BIncr, xName, yName) {
+			var models = [];
+			// tweak α and β until best fit
+			for (var a=yrange.lower; a<=yrange.upper; a+=aIncr)
+				for (var B=minB; B<=maxB; B+=BIncr) {
+					// get sum of squared distances S
+					var dsum = 0;
+					for (var i=0; i<dataset[xName].length && i<dataset[yName].length; i++)
+						dsum += Math.pow(dataset[yName][i] - a - B*dataset[xName][i], 2);
+					models.push({
+						a: a,
+						B: B,
+						S: dsum
+					});
+				}
+			
+			// get model with minimum squared distance
+			models.sort(function(a,b) { return a.S - b.S; });
+			return models[0];
 		}
 	};
 	
