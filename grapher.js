@@ -103,6 +103,13 @@ var Grapher = new function() {
 				ct.fillText(text, pos.x, pos.y);
 			};
 			
+			/* draws an axis label across the y-axis */
+			this.drawYAxisLabel = function(text, pos, width) {
+				var miscRenderer = new _this.renderers.misc(ct);
+				text = miscRenderer.cutTextToLength(text, width);
+				ct.fillText(text, pos.x, pos.y);
+			};
+			
 			/* draws xy-datapoints across the graph */
 			this.drawDataset = function(dset, xrange, yrange, pos, width, height) {
 				// dset - our data set {x: ,y: }
@@ -231,9 +238,9 @@ var Graph = function(canvas, type, dataModel, options) {
 				// add xy-axis labels
 				ctx.fillStyle = getOption("labelColor", "rgba(64,64,64,0.9)");
 				ctx.font = getOption("axesFont", "12px Trebuchet MS, Helvetica, sans-serif");
-				r_xy.drawXAxisLabel({
-					x: _gthis.pos.x + optCoeff(getOption("axesWidth", 2)),
-					y: _gthis.pos.y - 20 + optCoeff(getOption("axesWidth", 2))
+				r_xy.drawXAxisLabel(_gthis.axisLabels.x, {
+					x: _gthis.pos.x + _gthis.width/2 + optCoeff(getOption("axesWidth", 2)),
+					y: _gthis.pos.y + 40 + optCoeff(getOption("axesWidth", 2))
 				}, _gthis.width);
 				
 				// draw data points
