@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>grapher.js - demo</title>
+<script type="text/javascript" src="grapher.js"></script>
+<script type="text/javascript">
+window.onload = function() {
+	var graph = new Graph(document.getElementById("bargraph"), "scatter",
+		{ // information (data) goes here
+			
+		},
+		{ // options go here
+			rCallback: function() { 
+				console.log("Rendered a frame successfully.") 
+			},
+			eCallback: function() {
+				console.log("An error occurred.")
+			}
+		}
+	);
+	
+	// render the graph
+	Grapher.render(graph);
+};
+</script>
+<style type="text/css">
+html, body {
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+</head>
+<body>
+<div id="main">
+	<canvas id="bargraph" width="500" height="400">
+		Your browser does not support the HTML5 &lt;canvas&gt; specification.
+	</canvas>
+</div>
+</body>
+</html>
