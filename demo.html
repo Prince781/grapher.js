@@ -6,7 +6,7 @@
 <script type="text/javascript" src="grapher.js"></script>
 <script type="text/javascript">
 window.onload = function() {
-	var graph = new Graph(document.getElementById("bargraph"), "scatter",
+	var graph = new Graph(document.getElementById("graph_scatter"), "scatter",
 		{ // information (data) goes here
 			title: "Relationship Between Boilerplate Temperature and Time",
 			xlabel: "Time (s)",
@@ -60,7 +60,7 @@ html, body {
 <body>
 <div id="main_holder">
 	<div class="graphic_section">
-		<canvas id="bargraph" width="800" height="400">
+		<canvas id="graph_scatter" width="800" height="400">
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>
 	</div>

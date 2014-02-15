@@ -5,10 +5,10 @@ A data visualization API for the web (a middle ground between Chart.js and D3.js
 
 Example usage: 
 ```HTML
-<canvas id="graph">Your browser does not support HTML5 canvas.</canvas>
+<canvas id="graph1">Your browser does not support HTML5 canvas.</canvas>
 ```
 ```JavaScript
-var graph = new Graph(document.getElementById("bargraph"), "scatter",
+var graph = new Graph(document.getElementById("graph1"), "scatter",
 	{ // information (data) goes here
 		title: "Relationship Between Boilerplate Temperature and Time",
 		xlabel: "Time (s)",
