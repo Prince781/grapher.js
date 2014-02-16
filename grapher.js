@@ -103,9 +103,9 @@ var Grapher = new function() {
 					// get sum of squared distances S
 					var dsum = 0;
 					for (var i=0; i<dataset[xName].length && i<dataset[yName].length; i++)
-						dsum += Math.pow(dataset[yName][i] - a - B*dataset[xName][i], 2);
+						dsum += Math.pow(dataset[yName][i]-a-B*(dataset[xName][i]-xrange.lower), 2);
 					models.push({
-						a: a,
+						a: a-yrange.lower,
 						B: B,
 						S: dsum
 					});
@@ -113,6 +113,8 @@ var Grapher = new function() {
 			
 			// get model with minimum squared distance
 			models.sort(function(a,b) { return a.S - b.S; });
+			models[0].all = models;
+			models[0].string = "y = "+models[0].B+"x + "+models[0].a;
 			return models[0];
 		}
 	};
@@ -235,12 +237,41 @@ var Grapher = new function() {
 					}
 				}
 			};
+			
+			/* draws an "independent" line across the graph */
+			this.drawLine = function(model, xrange, yrange, pos, width, height) {
+				// model - { a: y-int, B: slope }
+				var start = {
+					x: pos.x,
+					y: pos.y-(model.a-yrange.lower)/(yrange.upper-yrange.lower)*height
+				};
+				ct.beginPath();
+				ct.moveTo(start.x, start.y);
+				ct.lineTo(
+					start.x+width,
+					start.y-model.B*height
+				);
+				ct.stroke();
+				ct.closePath();
+			};
 		},
 		bar: function(ct) {
 			/* draw bar-chart labels for a specified length of data */
 			this.drawXLabels = function(labels, pos, width) {
-				for (var i=0; i<labels.length; i++)
-					ct.fillText(labels[i], pos.x + (i + 1/2)*width/labels.length, pos.y);
+				for (var i=0; i<labels.length; i++) {
+					ct.save();
+					var w = width/labels.length,
+						twidth = ct.measureText(labels[i]).width;
+					ct.translate(pos.x + (i+1/2)*w, pos.y);
+					if (twidth > w) {
+						ct.translate(0, Math.sqrt(Math.pow(twidth,2)-Math.pow(w,2)));
+						ct.rotate(-Math.cos(w/twidth));
+					}
+					ct.fillText(labels[i], 0, 0);
+					if (twidth > w)
+						ct.rotate(Math.cos(w/twidth));
+					ct.restore();
+				}
 			};
 			
 			/* draws valuation bars */
@@ -396,7 +427,7 @@ var Graph = function(canvas, type, dataModel, options) {
 					}, _gthis.width, _gthis.height, true, _gthis.yrange);
 				}
 				
-				// draw data points
+				// draw data points, analysis functions
 				for (var i=0; i<dataModel.datasets.length; i++) {
 					ctx.fillStyle = getDOption(dataModel.datasets[i], "fillStyle", "rgba(210,210,210,0.3)");
 					ctx.strokeStyle = getDOption(dataModel.datasets[i],
@@ -404,13 +435,24 @@ var Graph = function(canvas, type, dataModel, options) {
 					ctx.lineWidth = getDOption(dataModel.datasets[i], "pointLineWidth", 2);
 					r_xy.drawDataset(dataModel.datasets[i], 
 						_gthis.xrange, _gthis.yrange, {
-						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
-						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
-					}, _gthis.width, _gthis.height);
+							x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+							y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
+						}, _gthis.width, _gthis.height);
+					
+					// analysis functions:
+					
+					// linear regression
+					if (getDOption(dataModel.datasets[i], "trendLine", false)) {
+						ctx.strokeStyle = getDOption(dataModel.datasets[i],
+								"trendLineColor", "rgba(134,134,134,0.7)");
+						r_xy.drawLine(Grapher.data.linearRegression(dataModel.datasets[i], 
+									_gthis.xrange, _gthis.yrange, 3, -10, 10, 0.5, "x", "y"),
+							_gthis.xrange, _gthis.yrange, {
+								x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+								y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
+							}, _gthis.width, _gthis.height);
+					}
 				}
-				
-				// draw any additional functions for the data:
-				
 			};
 			break;
 		case "bar": // TODO: bar chart
@@ -487,8 +529,6 @@ var Graph = function(canvas, type, dataModel, options) {
 						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height, i, dataModel.datasets.length);
 				}
-				
-				// TODO: draw xy labels, data
 			};
 			break;
 		default:
