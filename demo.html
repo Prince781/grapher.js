@@ -86,11 +86,11 @@ window.onload = function() {
 	
 	graphs.push(new Graph(document.getElementById("graph_bar"), "bar",
 		{ // information (data) goes here
-			title: "Number of \"Tutturu~\" References Per Steins;Gate Episode",
+			title: "I'm Getting Lazier and Lazier with These Graphs",
 			labels: (function() {
 				var rn = Grapher.range(1,12);
 				for (var i=0; i<rn.length; i++)
-					rn[i] = "Episode "+rn[i];
+					rn[i] = "Group "+rn[i];
 				return rn;
 			})(),
 			datasets: [
