@@ -23,15 +23,16 @@ window.onload = function() {
 				},
 				{ // data set 2
 					pointSize: 3,
-					drawLines: true,
+					drawLines: false,
 					trendLine: true,
+					trendLineColor: "rgba(122,145,112,0.7)",
 					strokeStyle: "rgba(122,145,12,0.7)",
 					x: Grapher.range(2,15),
 					y: Grapher.range(3,15)
 				},
 				{ // data set 3
 					pointSize: 3,
-					drawLines: false,
+					drawLines: true,
 					strokeStyle: "rgba(12,145,122,0.7)",
 					x: Grapher.range(0,6),
 					y: [3, 20, 23, 63, 10, 24, 3]
@@ -64,6 +65,8 @@ window.onload = function() {
 				{ // data set (random)
 					pointSize: 3,
 					drawLines: true,
+					trendLine: true,
+					trendLineColor: "rgba(122,145,112,0.7)",
 					strokeStyle: "rgba(123,85,182,0.7)",
 					x: Grapher.range(0,25),
 					y: Grapher.data.genRandomValues(Grapher.range(0,100), 26, true)
@@ -106,6 +109,16 @@ window.onload = function() {
 					fillStyle: "rgba(142,52,35,0.7)",
 					strokeStyle: "rgba(142,52,35,0.9)",
 					y: [3, 1, 6, 2, 3, 1, 9, 4, 1, 5, 3, 7]
+				},
+				{ // data set 3
+					pointSize: 4,
+					pointLineWidth: 2,
+					drawLines: true,
+					showStdevBars: true,
+					stdevBarsStyle: "rgba(152,135,142,0.9)",
+					fillStyle: "rgba(52,35,142,0.7)",
+					strokeStyle: "rgba(52,35,142,0.9)",
+					y: [4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4]
 				}
 			]
 		},

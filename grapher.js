@@ -116,6 +116,18 @@ var Grapher = new function() {
 			models[0].all = models;
 			models[0].string = "y = "+models[0].B+"x + "+models[0].a;
 			return models[0];
+		},
+		
+		/* finds standard deviation */
+		stdev: function(dataset, t) {
+			var sum = 0;
+			for (var i=0; i<dataset[t].length; i++)
+				sum += dataset[t][i];
+			sum /= dataset[t].length;
+			var ssum = 0;
+			for (var i=0; i<dataset[t].length; i++)
+				ssum += Math.abs(dataset[t][i]-sum);
+			return ssum / dataset[t].length;
 		}
 	};
 	
@@ -173,17 +185,23 @@ var Grapher = new function() {
 			};
 			
 			/* draws x-labels underneath the graph */
-			this.drawXLabels = function(xrange, pos, width) {
+			this.drawXLabels = function(xrange, pos, width, theight) {
 				// pos - {x: num, y: num}
+				// theight - height of text
+				theight = typeof theight=="undefined" ? 0 : theight;
 				for (var i=0; i<xrange.length; i++)
-					ct.fillText(xrange[i], pos.x+i*(width/(xrange.length-1)), pos.y);
+					ct.fillText(xrange[i], pos.x+i*(width/(xrange.length-1)),
+						pos.y + theight/2);
 			};
 			
 			/* draws y-axis range adjacent to the graph */
-			this.drawYLabels = function(yrange, pos, height) {
+			this.drawYLabels = function(yrange, pos, height, theight) {
 				// pos - {x: num, y: num}
+				// theight - height of text
+				theight = typeof theight=="undefined" ? 0 : theight;
 				for (var i=0; i<yrange.length; i++)
-					ct.fillText(yrange[i], pos.x, pos.y-i*(height/(yrange.length-1)));
+					ct.fillText(yrange[i], pos.x, 
+						pos.y-i*(height/(yrange.length-1)) + theight/2);
 			};
 			
 			/* draws an axis label across the x-axis */
@@ -245,14 +263,25 @@ var Grapher = new function() {
 					x: pos.x,
 					y: pos.y-(model.a-yrange.lower)/(yrange.upper-yrange.lower)*height
 				};
+				var final = {
+					x: start.x+width,
+					y: start.y-((model.B*xrange.upper-yrange.lower)/(yrange.upper-yrange.lower))*height
+				};
 				ct.beginPath();
 				ct.moveTo(start.x, start.y);
-				ct.lineTo(
-					start.x+width,
-					start.y-model.B*height
-				);
+				ct.lineTo(final.x, final.y);
 				ct.stroke();
 				ct.closePath();
+				
+				// draw label
+				var mid = {x: (final.x+start.x)/2, y: (final.y+start.y)/2},
+					dist = Math.sqrt(Math.pow(final.x-start.x,2)+Math.pow(final.y-start.y,2));
+				ct.save();
+				ct.translate(mid.x, mid.y);
+				ct.rotate(Math.sin((final.y-start.y)/dist));
+				ct.fillText("y = "+model.B+"x"+(model.a?"+ "+model.a:""), 0, 0);
+				ct.rotate(-Math.sin((final.y-start.y)/dist));
+				ct.restore();
 			};
 		},
 		bar: function(ct) {
@@ -292,6 +321,42 @@ var Grapher = new function() {
 					ct.fill();
 					ct.closePath();
 				}
+			};
+			
+			/* draws stddev bars */
+			this.drawStdev = function(dset, labelLen, yrange, pos, width, height, bar, barN, sStyle) {
+				// bar - current bar number (if we have N bars) (starts at 0)
+				// barN - number of bars
+				// sStyle - stroke style
+				var padding = 10, stdpad = 3;
+				// stdpad - standard padding
+				// labelLen - number of labels
+				ct.save();
+				ct.strokeStyle = sStyle;
+				for (var i=0; i<labelLen && i<dset.y.length; i++) {
+					var x = pos.x+i/labelLen*width + padding/2,
+						y = pos.y,
+						rwidth = width/labelLen - padding,
+						rheight = -((dset.y[i]-yrange.lower)/(yrange.upper-yrange.lower))*height,
+						start = {x:x, y:y+rheight},
+						ydev = _this.data.stdev(dset, "y")/(yrange.upper-yrange.lower)*height;
+					ct.beginPath();
+					ct.moveTo(start.x+rwidth*(bar/barN)-stdpad, start.y-ydev);
+					ct.lineTo(start.x+rwidth*((bar+1)/barN)+stdpad, start.y-ydev);
+					ct.stroke();
+					ct.closePath();
+					ct.beginPath();
+					ct.moveTo(start.x+rwidth*((bar+0.5)/barN), start.y-ydev);
+					ct.lineTo(start.x+rwidth*((bar+0.5)/barN), start.y+ydev);
+					ct.stroke();
+					ct.closePath();
+					ct.beginPath();
+					ct.moveTo(start.x+rwidth*(bar/barN)-stdpad, start.y+ydev);
+					ct.lineTo(start.x+rwidth*((bar+1)/barN)+stdpad, start.y+ydev);
+					ct.stroke();
+					ct.closePath();
+				}
+				ct.restore();
 			};
 		}
 	};
@@ -445,6 +510,8 @@ var Graph = function(canvas, type, dataModel, options) {
 					if (getDOption(dataModel.datasets[i], "trendLine", false)) {
 						ctx.strokeStyle = getDOption(dataModel.datasets[i],
 								"trendLineColor", "rgba(134,134,134,0.7)");
+						ctx.fillStyle = getDOption(dataModel.datasets[i],
+								"equationColor", "rgba(34,34,34,1)")
 						r_xy.drawLine(Grapher.data.linearRegression(dataModel.datasets[i], 
 									_gthis.xrange, _gthis.yrange, 3, -10, 10, 0.5, "x", "y"),
 							_gthis.xrange, _gthis.yrange, {
@@ -455,7 +522,7 @@ var Graph = function(canvas, type, dataModel, options) {
 				}
 			};
 			break;
-		case "bar": // TODO: bar chart
+		case "bar":
 			_gthis.render = function() {
 				var r_xy = new Grapher.renderers.xy(ctx), // create a new xy renderer
 					r_bar = new Grapher.renderers.bar(ctx);
@@ -528,8 +595,19 @@ var Graph = function(canvas, type, dataModel, options) {
 						x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
 						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height, i, dataModel.datasets.length);
+					
+					// draw standard deviation lines
+					if (getDOption(dataModel.datasets[i], "showStdevBars", false))
+						r_bar.drawStdev(dataModel.datasets[i], 
+							dataModel.labels.length, _gthis.yrange, {
+							x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
+							y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
+						}, _gthis.width, _gthis.height, i, dataModel.datasets.length,
+						getDOption(dataModel.datasets[i], "stdevBarsStyle", "rgba(124,219,133,0.7)"));
 				}
 			};
+			break;
+		case "pie":
 			break;
 		default:
 			throw "Chart type not supported.";
