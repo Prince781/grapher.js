@@ -726,10 +726,12 @@ var Graph = function(canvas, type, dataModel, options) {
 											_gthis.vrange.upper, _gthis.radius);
 				
 				// draw pie section labels from data
-				ctx.font = getOption("font", "12px Trebuchet MS, Helvetica, sans-serif");
-				ctx.fillStyle = getOption("labelColor", "#fff");
-				r_pie.drawSectionLabels(dataModel.data, "value", _gthis.pos,
-											_gthis.vrange.upper, _gthis.radius);
+				if (getOption("showLabels", true)) {
+					ctx.font = getOption("font", "12px Trebuchet MS, Helvetica, sans-serif");
+					ctx.fillStyle = getOption("labelColor", "#fff");
+					r_pie.drawSectionLabels(dataModel.data, "value", _gthis.pos,
+												_gthis.vrange.upper, _gthis.radius);
+				}
 			};
 			break;
 		default:
