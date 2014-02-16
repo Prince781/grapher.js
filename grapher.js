@@ -369,8 +369,32 @@ var Grapher = new function() {
 			};
 		},
 		pie: function(ct) {
-			this.drawPie = function() {
-				
+			/* draws the basic pie outline */
+			this.drawPie = function(pos, radius) {
+				ct.beginPath();
+				ct.arc(pos.x, pos.y, radius, 0, Math.PI*2, true);
+				ct.stroke();
+				ct.closePath();				
+			};
+			
+			/* constructs all of the pie's subsections from given data */
+			this.drawDataSections = function(data, vName, pos, vrange, radius) {
+				// data - our data points
+				// vName - key name to access values
+				var off = 0; // offset from previous value
+				ct.save();
+				ct.lineWidth = radius-3;
+				for (var i=0; i<data.length; i++) {
+					ct.strokeStyle = "fillStyle" in data[i] ? 
+									data[i].fillStyle : "rgba(135,39,43,0.8)";
+					ct.beginPath();
+					ct.arc(pos.x, pos.y, ct.lineWidth/2, off/vrange * Math.PI*2, 
+						(off+data[i][vName])/vrange * Math.PI*2, false);
+					ct.stroke();
+					ct.closePath();
+					off += data[i][vName];
+				}
+				ct.restore();
 			};
 		}
 	};
@@ -441,19 +465,20 @@ var Graph = function(canvas, type, dataModel, options) {
 			this.yrange = Grapher.data.getRange(dataModel.datasets, "y", _gthis.width);
 			break;
 		case "pie":
-			this.width = canvas.width - 60; // padding = 30
-			this.height = canvas.height - 100;
+			var offset = 80;
+			this.width = canvas.width - offset;
+			this.height = canvas.height - offset;
 			this.radius = _gthis.width / 2;
 			this.pos = {
-				x: 30 + _gthis.width,
-				y: 100
+				x: offset/2 + _gthis.width/2,
+				y: offset/2 + _gthis.height/2
 			};
-			this.yrange = Grapher.data.getRadialRange(dataModel.data, "value");
+			this.vrange = Grapher.data.getRadialRange(dataModel.data, "value");
 			break;
 		default:
 			console.log("Unsupported graph type.");
 			break;
-		// TODO: work on pie chart rendering and data manipulation
+		// TODO: MORE GRAPH TYPES
 	}
 	
 	this.type = type;
@@ -645,7 +670,7 @@ var Graph = function(canvas, type, dataModel, options) {
 		case "pie":
 			_gthis.render = function() {
 				var r_xy = new Grapher.renderers.xy(ctx),
-					r_bar = new Grapher.renderers.bar(ctx); // new renderers
+					r_pie = new Grapher.renderers.pie(ctx); // new renderers
 				fRenderer(); // do this first
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
@@ -656,7 +681,12 @@ var Graph = function(canvas, type, dataModel, options) {
 				}, _gthis.width+50);
 				
 				// draw main pie
+				ctx.strokeStyle = getOption("strokeStyle", "rgba(74,74,74,0.8)");
+				r_pie.drawPie(_gthis.pos, _gthis.radius);
 				
+				// draw pie sections from data
+				r_pie.drawDataSections(dataModel.data, "value", _gthis.pos,
+												_gthis.vrange.upper, _gthis.radius);
 			};
 			break;
 		default:
