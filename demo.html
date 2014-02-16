@@ -132,9 +132,11 @@ window.onload = function() {
 	
 	graphs.push(new Graph(document.getElementById("graph_pie"), "pie",
 		{ // information goes here
-			datasets: [
+			title: "Operating System Usage Share",
+			data: [
 				{
-					y: [3,2]
+					fillStyle: "rgba(132,220,101,0.8)",
+					value: 32
 				}
 			]
 		},

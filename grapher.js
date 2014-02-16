@@ -49,7 +49,7 @@ var Grapher = new function() {
 			return isum/(dataset.length-1) == 0 ? 1 : isum/(dataset.length-1);
 		},
 		
-		/* gets a general boundary between n datasets of k datapoints */
+		/* gets a general (linear) boundary between n datasets of k datapoints */
 		getRange: function(datasets, t, length) {
 			// t - type (such as "x" or "y")
 			// length - dimension to span range across (calculations are adjusted to this)
@@ -69,6 +69,15 @@ var Grapher = new function() {
 			// ratios for increments
 			var rIncr = (delta/(incr/datasets.length))/length, rIncrA = (delta/(incrA/datasets.length))/length;
 			return _this.range(lower, upper, rIncr > 0.04 ? incrA/datasets.length : incr/datasets.length);
+		},
+		
+		/* gets a general (radial) boundary between k datapoints */
+		getRadialRange: function(datapoints, t) {
+			// t - type (such as "x" or "y")
+			var sum = 0;
+			for (var i=0; i<datapoints.length; i++)
+				sum += datapoints[i][t];
+			return _this.range(0, sum, 1);
 		},
 		
 		/* creates a dataset object from another object */
@@ -358,6 +367,11 @@ var Grapher = new function() {
 				}
 				ct.restore();
 			};
+		},
+		pie: function(ct) {
+			this.drawPie = function() {
+				
+			};
 		}
 	};
 	
@@ -414,20 +428,36 @@ var Graph = function(canvas, type, dataModel, options) {
 	};
 	
 	// geometry of the actual graph frame
-	this.width = canvas.width-100 + 20*(_gthis.axisLabels.y=="");
-	this.height = canvas.height-100 + 20*(_gthis.axisLabels.x=="");
-	this.pos = chartIsXYType ? {
-		x: 40 + 20*(_gthis.axisLabels.y!=""),
-		y: canvas.height-40 - 20*(_gthis.axisLabels.x!="")
-	} : { // not xy-type
-		x: 0,
-		y: 0
-	};
-
+	switch (type) {
+		case "scatter":
+			this.xrange = Grapher.data.getRange(dataModel.datasets, "x", _gthis.height);
+		case "bar":
+			this.width = canvas.width-100 + 20*(_gthis.axisLabels.y=="");
+			this.height = canvas.height-100 + 20*(_gthis.axisLabels.x=="");
+			this.pos = {
+				x: 40 + 20*(_gthis.axisLabels.y!=""),
+				y: canvas.height-40 - 20*(_gthis.axisLabels.x!="")
+			};
+			this.yrange = Grapher.data.getRange(dataModel.datasets, "y", _gthis.width);
+			break;
+		case "pie":
+			this.width = canvas.width - 60; // padding = 30
+			this.height = canvas.height - 100;
+			this.radius = _gthis.width / 2;
+			this.pos = {
+				x: 30 + _gthis.width,
+				y: 100
+			};
+			this.yrange = Grapher.data.getRadialRange(dataModel.data, "value");
+			break;
+		default:
+			console.log("Unsupported graph type.");
+			break;
+		// TODO: work on pie chart rendering and data manipulation
+	}
+	
 	this.type = type;
-	if (type == "scatter")
-		this.xrange = Grapher.data.getRange(dataModel.datasets, "x", _gthis.height);
-	this.yrange = Grapher.data.getRange(dataModel.datasets, "y", _gthis.width);
+	
 	
 	this.rCallback = getOption("rCallback", function(){}); // on successful render
 	this.eCallback = getOption("eCallback", function(){}); // on error
@@ -517,7 +547,7 @@ var Graph = function(canvas, type, dataModel, options) {
 						ctx.fillStyle = getDOption(dataModel.datasets[i],
 								"equationColor", "rgba(34,34,34,1)")
 						r_xy.drawLine(Grapher.data.linearRegression(dataModel.datasets[i], 
-									_gthis.xrange, _gthis.yrange, 3, -10, 10, 0.2, "x", "y"),
+									_gthis.xrange, _gthis.yrange, 1, -10, 10, 0.2, "x", "y"),
 							_gthis.xrange, _gthis.yrange, {
 								x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
 								y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
@@ -614,7 +644,19 @@ var Graph = function(canvas, type, dataModel, options) {
 			break;
 		case "pie":
 			_gthis.render = function() {
+				var r_xy = new Grapher.renderers.xy(ctx),
+					r_bar = new Grapher.renderers.bar(ctx); // new renderers
 				fRenderer(); // do this first
+				// draw title
+				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
+				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
+				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
+					x: optCoeff(getOption("axesWidth", 1)) + canvas.width/2,
+					y: 20 + optCoeff(getOption("axesWidth", 1))
+				}, _gthis.width+50);
+				
+				// draw main pie
+				
 			};
 			break;
 		default:
