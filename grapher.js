@@ -381,20 +381,36 @@ var Grapher = new function() {
 			this.drawDataSections = function(data, vName, pos, vrange, radius) {
 				// data - our data points
 				// vName - key name to access values
-				var off = 0; // offset from previous value
-				ct.save();
-				ct.lineWidth = radius-3;
+				var off = 0, r = radius-2; // offset from previous value
 				for (var i=0; i<data.length; i++) {
+					ct.save();
+					ct.lineWidth = r;
 					ct.strokeStyle = "fillStyle" in data[i] ? 
 									data[i].fillStyle : "rgba(135,39,43,0.8)";
 					ct.beginPath();
-					ct.arc(pos.x, pos.y, ct.lineWidth/2, off/vrange * Math.PI*2, 
-						(off+data[i][vName])/vrange * Math.PI*2, false);
+					ct.arc(pos.x, pos.y, r/2, -(off+data[i][vName])/vrange * Math.PI*2, 
+						-off/vrange * Math.PI*2, false);
 					ct.stroke();
 					ct.closePath();
+					ct.restore();
+					
+					// draw separator lines
+					if (true) { // TODO: fix
+						ct.save();
+						ct.lineWidth = 2;
+						ct.strokeStyle = "white";
+						ct.beginPath();
+						ct.moveTo(pos.x, pos.y);
+						ct.lineTo(
+							pos.x+r*Math.cos((off+data[i][vName])/vrange * Math.PI*2),
+							pos.y-r*Math.sin((off+data[i][vName])/vrange * Math.PI*2)
+						);
+						ct.stroke();
+						ct.closePath();
+						ct.restore();
+					}
 					off += data[i][vName];
 				}
-				ct.restore();
 			};
 		}
 	};
