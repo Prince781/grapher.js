@@ -395,20 +395,41 @@ var Grapher = new function() {
 					ct.restore();
 					
 					// draw separator lines
-					if (true) { // TODO: fix
-						ct.save();
-						ct.lineWidth = 2;
-						ct.strokeStyle = "white";
-						ct.beginPath();
-						ct.moveTo(pos.x, pos.y);
-						ct.lineTo(
-							pos.x+r*Math.cos((off+data[i][vName])/vrange * Math.PI*2),
-							pos.y-r*Math.sin((off+data[i][vName])/vrange * Math.PI*2)
-						);
-						ct.stroke();
-						ct.closePath();
-						ct.restore();
-					}
+					ct.save();
+					ct.lineWidth = 2;
+					ct.strokeStyle = "#fff";
+					ct.beginPath();
+					ct.moveTo(pos.x, pos.y);
+					ct.lineTo(
+						pos.x+r*Math.cos((off+data[i][vName])/vrange * Math.PI*2),
+						pos.y-r*Math.sin((off+data[i][vName])/vrange * Math.PI*2)
+					);
+					ct.stroke();
+					ct.closePath();
+					ct.restore();
+					off += data[i][vName];
+				}
+			};
+			
+			/* draws appropriate section labels from data */
+			this.drawSectionLabels = function(data, vName, pos, vrange, radius) {
+				// data - our data contains vData (vName) and individual labels
+				var off = 0, r = radius/2; // radius along text
+				for (var i=0; i<data.length; i++) {
+					if (!("label" in data[i]) || typeof data[i].label != "string") continue;
+					ct.save();
+					var ang = (off+data[i][vName]/2)/vrange * Math.PI*2;
+					var tpos = {
+						x: pos.x+r*Math.cos(ang),
+						y: pos.y-r*Math.sin(ang)
+					};
+					ct.translate(tpos.x, tpos.y);
+					if (data[i][vName]/vrange < 1) // acute
+						ct.rotate(-ang-Math.PI*!(ang>Math.PI));
+					ct.fillText(data[i].label, 0, 5);
+					if (data[i][vName]/vrange < 1/4)
+						ct.rotate(ang+Math.PI*!(ang>Math.PI));
+					ct.restore();
 					off += data[i][vName];
 				}
 			};
@@ -702,7 +723,13 @@ var Graph = function(canvas, type, dataModel, options) {
 				
 				// draw pie sections from data
 				r_pie.drawDataSections(dataModel.data, "value", _gthis.pos,
-												_gthis.vrange.upper, _gthis.radius);
+											_gthis.vrange.upper, _gthis.radius);
+				
+				// draw pie section labels from data
+				ctx.font = getOption("font", "12px Trebuchet MS, Helvetica, sans-serif");
+				ctx.fillStyle = getOption("labelColor", "#fff");
+				r_pie.drawSectionLabels(dataModel.data, "value", _gthis.pos,
+											_gthis.vrange.upper, _gthis.radius);
 			};
 			break;
 		default:
