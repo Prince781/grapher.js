@@ -105,8 +105,8 @@ var Grapher = new function() {
 					for (var i=0; i<dataset[xName].length && i<dataset[yName].length; i++)
 						dsum += Math.pow(dataset[yName][i]-a-B*(dataset[xName][i]-xrange.lower), 2);
 					models.push({
-						a: a-yrange.lower,
-						B: B,
+						a: parseFloat((a-yrange.lower).toFixed(2)),
+						B: parseFloat(B.toFixed(2)),
 						S: dsum
 					});
 				}
@@ -383,6 +383,7 @@ var Graph = function(canvas, type, dataModel, options) {
 		throw "GraphModel: param \"canvas\" is not actually a <canvas> element.";
 
 	var _gthis = this;
+	var chartIsXYType = type == "scatter" || type == "bar";
 	
 	// private:
 	function getDOption(dataset, key, def) {
@@ -415,9 +416,12 @@ var Graph = function(canvas, type, dataModel, options) {
 	// geometry of the actual graph frame
 	this.width = canvas.width-100 + 20*(_gthis.axisLabels.y=="");
 	this.height = canvas.height-100 + 20*(_gthis.axisLabels.x=="");
-	this.pos = {
+	this.pos = chartIsXYType ? {
 		x: 40 + 20*(_gthis.axisLabels.y!=""),
 		y: canvas.height-40 - 20*(_gthis.axisLabels.x!="")
+	} : { // not xy-type
+		x: 0,
+		y: 0
 	};
 
 	this.type = type;
@@ -513,7 +517,7 @@ var Graph = function(canvas, type, dataModel, options) {
 						ctx.fillStyle = getDOption(dataModel.datasets[i],
 								"equationColor", "rgba(34,34,34,1)")
 						r_xy.drawLine(Grapher.data.linearRegression(dataModel.datasets[i], 
-									_gthis.xrange, _gthis.yrange, 3, -10, 10, 0.5, "x", "y"),
+									_gthis.xrange, _gthis.yrange, 3, -10, 10, 0.2, "x", "y"),
 							_gthis.xrange, _gthis.yrange, {
 								x: _gthis.pos.x + optCoeff(getOption("axesWidth", 1)),
 								y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
@@ -596,6 +600,7 @@ var Graph = function(canvas, type, dataModel, options) {
 						y: _gthis.pos.y - optCoeff(getOption("axesWidth", 1))
 					}, _gthis.width, _gthis.height, i, dataModel.datasets.length);
 					
+					ctx.lineWidth = getDOption(dataModel.datasets[i], "stdevBarWidth", 1);
 					// draw standard deviation lines
 					if (getDOption(dataModel.datasets[i], "showStdevBars", false))
 						r_bar.drawStdev(dataModel.datasets[i], 
@@ -608,6 +613,9 @@ var Graph = function(canvas, type, dataModel, options) {
 			};
 			break;
 		case "pie":
+			_gthis.render = function() {
+				fRenderer(); // do this first
+			};
 			break;
 		default:
 			throw "Chart type not supported.";

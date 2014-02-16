@@ -115,6 +115,7 @@ window.onload = function() {
 					pointLineWidth: 2,
 					drawLines: true,
 					showStdevBars: true,
+					stdevBarWidth: 1,
 					stdevBarsStyle: "rgba(152,135,142,0.9)",
 					fillStyle: "rgba(52,35,142,0.7)",
 					strokeStyle: "rgba(52,35,142,0.9)",
@@ -129,6 +130,18 @@ window.onload = function() {
 		}
 	));
 	
+	graphs.push(new Graph(document.getElementById("graph_pie"), "pie",
+		{ // information goes here
+			datasets: [
+				{
+					y: [3,2]
+				}
+			]
+		},
+		{ // options go here
+			
+		}
+	));
 	// render the graphs
 	for (var g=0; g<graphs.length; g++)
 		Grapher.render(graphs[g]);
@@ -155,6 +168,11 @@ html, body {
 	</div>
 	<div class="graphic_section">
 		<canvas id="graph_bar" width="800" height="400">
+			Your browser does not support the HTML5 &lt;canvas&gt; specification.
+		</canvas>
+	</div>
+	<div class="graphic_section" style="width: 500px; height: 500px">
+		<canvas id="graph_pie" width="500" height="500">
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>
 	</div>
