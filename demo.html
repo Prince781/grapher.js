@@ -190,10 +190,10 @@ window.onload = function() {
 		}
 	));
 	
-	graphs.push(new Graph(document.getElementById("graph_rader"), "rader",
+	graphs.push(new Graph(document.getElementById("graph_radar"), "radar",
 		{ // information (data)
 			title: "Valve Corporation, Allocated Development Hours",
-			labels: ["Half Life 3", "L4D3", "Source Engine 3", "Portal 2 (Linux Port)"]
+			labels: ["Half Life 3", "L4D3", "Source Engine 3", "Portal 2 (Linux Port)"],
 			datasets: [
 				{ // data set 1
 					strokeStyle: "rgba(32,199,88,0.9)",
@@ -240,7 +240,7 @@ html, body {
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>
 	</div>
-	<div class="graphic_section">
+	<div class="graphic_section" style="width: 500px; height: 500px">
 		<canvas id="graph_radar" width="500" height="500">
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>

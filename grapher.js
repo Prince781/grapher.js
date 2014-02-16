@@ -737,6 +737,7 @@ var Graph = function(canvas, type, dataModel, options) {
 			break;
 		case "radar":
 			_gthis.render = function() {
+				var r_xy = new Grapher.renderers.xy(ctx);
 				fRenderer(); // do this first
 
 				// draw title
