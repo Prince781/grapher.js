@@ -433,6 +433,16 @@ var Grapher = new function() {
 					off += data[i][vName];
 				}
 			};
+		},
+		radar: function(ct) {
+			/* draws ranges around the radar graph */
+			this.drawRanges = function(pos, radius, labels, vrange) {
+				// construct lines
+				for (var p=vrange.lower; p<=vrange.upper; p+=vrange.increment)
+					for (var i=0; i<labels.length; i++) {
+						var ang = Math.PI/2 + (Math.PI*2) / labels.length;
+					}
+			};
 		}
 	};
 	
