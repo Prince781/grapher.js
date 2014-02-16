@@ -288,7 +288,7 @@ var Grapher = new function() {
 				ct.save();
 				ct.translate(mid.x, mid.y);
 				ct.rotate(Math.sin((final.y-start.y)/dist));
-				ct.fillText("y = "+model.B+"x"+(model.a?"+ "+model.a:""), 0, 0);
+				ct.fillText("y = "+model.B+"x"+(model.a?" + "+model.a:""), 0, 0);
 				ct.rotate(-Math.sin((final.y-start.y)/dist));
 				ct.restore();
 			};
@@ -709,6 +709,7 @@ var Graph = function(canvas, type, dataModel, options) {
 				var r_xy = new Grapher.renderers.xy(ctx),
 					r_pie = new Grapher.renderers.pie(ctx); // new renderers
 				fRenderer(); // do this first
+				
 				// draw title
 				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
 				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
@@ -732,6 +733,21 @@ var Graph = function(canvas, type, dataModel, options) {
 					r_pie.drawSectionLabels(dataModel.data, "value", _gthis.pos,
 												_gthis.vrange.upper, _gthis.radius);
 				}
+			};
+			break;
+		case "radar":
+			_gthis.render = function() {
+				fRenderer(); // do this first
+
+				// draw title
+				ctx.fillStyle = getOption("titleColor", "rgba(34,34,34,0.9)");
+				ctx.font = getOption("titleFont", "18px Trebuchet MS, Helvetica, sans-serif");
+				r_xy.drawTitle("title" in dataModel ? dataModel.title : "Title", {
+					x: optCoeff(getOption("axesWidth", 1)) + canvas.width/2,
+					y: 20 + optCoeff(getOption("axesWidth", 1))
+				}, _gthis.width+50);
+				
+				
 			};
 			break;
 		default:

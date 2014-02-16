@@ -84,6 +84,29 @@ window.onload = function() {
 		}
 	));
 	
+	/*graphs.push(new Graph(document.getElementById("graph_scatter_mrand"), "scatter",
+		{ // information (data)
+		    title: "Elements Per Time",
+		    xlabel: "Time (s)",
+		    ylabel: "Elements",
+		    datasets: [
+		        { // set 1
+		            pointSize: 4,
+		            pointLineWidth: 2,
+		            drawLines: true, // visually connect our datapoints by a line
+		            strokeStyle: "rgba(142,35,52,0.7)", // specify datapoints color
+		            x: [0, 1, 2, 3, 4, 5, 6, 7], // our domain
+		            y: [0, 34, 32, 31, 33, 43, 43, 56], // our range
+		            trendLine: true,
+		            trendLineColor: "rgba(122,145,112,0.7)"
+		        }
+		    ]
+		},
+		{ // options
+		     gridLines: true // render grid lines
+		}
+	));*/
+	
 	graphs.push(new Graph(document.getElementById("graph_bar"), "bar",
 		{ // information (data) goes here
 			title: "I'm Getting Lazier and Lazier with These Graphs",
@@ -166,6 +189,23 @@ window.onload = function() {
 			showLabels: true
 		}
 	));
+	
+	graphs.push(new Graph(document.getElementById("graph_rader"), "rader",
+		{ // information (data)
+			title: "Valve Corporation, Allocated Development Hours",
+			labels: ["Half Life 3", "L4D3", "Source Engine 3", "Portal 2 (Linux Port)"]
+			datasets: [
+				{ // data set 1
+					strokeStyle: "rgba(32,199,88,0.9)",
+					values: [0, 130, 449, 209]
+				}
+			]
+		},
+		{ // options
+		
+		}
+	));
+	
 	// render the graphs
 	for (var g=0; g<graphs.length; g++)
 		Grapher.render(graphs[g]);
@@ -197,6 +237,11 @@ html, body {
 	</div>
 	<div class="graphic_section">
 		<canvas id="graph_scatter_mrand" width="800" height="400">
+			Your browser does not support the HTML5 &lt;canvas&gt; specification.
+		</canvas>
+	</div>
+	<div class="graphic_section">
+		<canvas id="graph_radar" width="500" height="500">
 			Your browser does not support the HTML5 &lt;canvas&gt; specification.
 		</canvas>
 	</div>
