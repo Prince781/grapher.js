@@ -1,7 +1,7 @@
 grapher.js
 ==========
 
-![Bar chart in grapher.js](doc/shots/bar1.png)
+![Scatter plot in grapher.js](doc/shots/scatter1.png)
 
 A data visualization API for the web (a middle ground between Chart.js and D3.js). Idea for PennApps 2014.
 
@@ -46,5 +46,3 @@ var graph = new Graph(document.getElementById("graph1"), "scatter",
 // render the graph
 Grapher.render(graph);
 ```
-
-![Scatter plot in grapher.js](doc/shots/scatter1.png)
