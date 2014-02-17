@@ -129,14 +129,14 @@ var Grapher = new function() {
 		
 		/* finds standard deviation */
 		stdev: function(dataset, t) {
-			var sum = 0;
+			var avg = 0;
 			for (var i=0; i<dataset[t].length; i++)
-				sum += dataset[t][i];
-			sum /= dataset[t].length;
-			var ssum = 0;
+				avg += dataset[t][i];
+			avg /= dataset[t].length;
+			var dev = 0;
 			for (var i=0; i<dataset[t].length; i++)
-				ssum += Math.abs(dataset[t][i]-sum);
-			return ssum / dataset[t].length;
+				dev += Math.abs(dataset[t][i]-avg);
+			return dev / dataset[t].length;
 		}
 	};
 	
@@ -441,6 +441,15 @@ var Grapher = new function() {
 				for (var p=vrange.lower; p<=vrange.upper; p+=vrange.increment)
 					for (var i=0; i<labels.length; i++) {
 						var ang = Math.PI/2 + (Math.PI*2) / labels.length;
+						ct.beginPath();
+						ct.moveTo(
+							pos.x+radius*Math.cos(ang),
+							pos.y+radius*Math.sin(ang)
+						);
+						/*
+						ct.lineTo(
+							
+						);*/
 					}
 			};
 		}
